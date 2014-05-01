@@ -253,6 +253,14 @@ define(function (require, exports, module) {
 			parts[2]
 		];
 	}
+	
+	// Resize image preview
+	function resizePanel() {
+		if(isVisible && $panel) {
+			var height = panel.$panel.innerHeight() - 50;
+			$panel.find('.span10').css('height', height + 'px');
+		}
+	}
 
 	// add to toolbar
 	$icon = $('<a>').attr({
@@ -260,6 +268,8 @@ define(function (require, exports, module) {
 		href: '#',
 		title: _ExtensionLabel,
 	}).click(main).appendTo($('#main-toolbar .buttons'));
+	
+	$(PanelManager).on('editorAreaResize', resizePanel);
 
 	// Add command to project menu.
 	$(projectMenu).on("beforeContextMenuOpen", function (e) {
