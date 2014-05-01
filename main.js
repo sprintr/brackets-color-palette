@@ -257,8 +257,12 @@ define(function (require, exports, module) {
 	// Resize image preview
 	function resizePanel() {
 		if(isVisible && $panel) {
-			var height = panel.$panel.innerHeight() - 50;
-			$panel.find('.span10').css('height', height + 'px');
+			var height = panel.$panel.innerHeight() - 48,
+				width = panel.$panel.innerWidth() - 190;
+			$panel.find('.span10').css({
+				'height': height + 'px',
+				'width': width + 'px'
+			});
 		}
 	}
 
