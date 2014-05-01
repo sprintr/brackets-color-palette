@@ -106,8 +106,11 @@ define(function (require, exports, module) {
 		if (visible) {
 			isVisible = true;
 
-			if (panel) panel.hide();
-
+			if (panel) {
+				panel.hide();
+				$panel.remove();
+			}
+				
 			$panel = $(Mustache.render(panelHTML, imageData));
 			eventController($panel);
 			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 350);
@@ -119,6 +122,7 @@ define(function (require, exports, module) {
 			$icon.removeClass('active');
 			format = 1;
 			panel.hide();
+			$panel.remove();
 		}
 	}
 
