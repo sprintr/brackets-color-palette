@@ -7,6 +7,11 @@
 #color-palette .panel-content {
 	width: 100%;
 }
+#color-palette .toolbar-right {
+	position: absolute;
+	right: 40px;
+	top: 6px;
+}
 #color-palette .span2 {
 	width: 150px;
 	float: left;
