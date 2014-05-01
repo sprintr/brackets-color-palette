@@ -1,0 +1,79 @@
+#color-palette-icon {
+	background-image: url(palette-sprite.svg);
+}
+#color-palette-icon.active {
+	background-position: 0 -24px !important;
+}
+#color-palette .panel-content {
+	width: 100%;
+}
+#color-palette .span2 {
+	width: 150px;
+	float: left;
+}
+#color-palette .span10 {
+	width: 82%;
+	float: left;
+	overflow: scroll;
+	height: 300px;
+}
+#color-palette .transparent {
+	background-image: url(transparent.png);
+}
+#color-palette .preview {
+	background-repeat: no-repeat;
+}
+#color-palette .holder {
+	margin-top: 5px;
+	height: 120px;
+	width: 120px;
+	border: 3px solid #ccc;
+}
+#color-palette .holder-small {
+	margin-top: 5px;
+	height: 50px;
+	width: 50px;
+	border: 3px solid #ccc;
+	display: inline-block;
+}
+#color-palette .zoomed {
+	width: 60px;
+	height: 60px;
+	zoom: 2;
+}
+#color-palette .preview1,
+#color-palette .preview2 {
+	width: 50px;
+	height: 50px;
+	cursor: pointer;
+}
+#color-palette .zoom-preview {
+	position: relative;
+}
+#color-palette .guide {
+	background-image: url(guide.png);
+	position: absolute;
+}
+#color-palette .x {
+	width: 1px;
+	height: 120px;
+	top: 0;
+	left: 60px;
+}
+#color-palette .y {
+	height: 1px;
+	width: 120px;
+	left: 0;
+	top: 60px;
+}
+#color-palette .panel-img {
+	cursor: crosshair;
+	margin-top: 5px;
+}
+#color-palette .img-canvas {
+	display: none;
+}
+#color-palette .code-view {
+	font-family: monospace;
+	font-size: 1em;
+}

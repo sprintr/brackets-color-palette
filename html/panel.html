@@ -1,0 +1,33 @@
+<div id="color-palette" class="bottom-panel vert-resizable top-resizer">
+	<div class="toolbar simple-toolbar-layout">
+		<select name="" class="color-model">
+			<option value="1">Hex</option>
+			<option value="2">HSL(a)</option>
+			<option value="3">RGB(a)</option>
+		</select>
+		<div class="toolbar-right"> {{imageName}} </div>
+		<a href="#" class="close">&times;</a>
+	</div>
+	<div class="resizable-content no-focus">
+		<div class="panel-content clearfix">
+			<aside class="span2">
+				<div class="zoom-preview transparent holder">
+					<div class="preview zoomed" style="background-image: url('{{imagePath}}')"></div>
+					<span class="x guide"></span>
+					<span class="y guide"></span>
+				</div>
+				<div class="transparent holder-small">
+					<div class="preview1" title="Current Color"></div>
+				</div>
+				<div class="transparent holder-small">
+					<div class="preview2" title="Selected Color"></div>
+				</div>
+				<div class="code-view">#000000</div>
+			</aside>
+			<aside class="span10">
+					<img src="{{imagePath}}" alt="" class="panel-img transparent">
+					<canvas class="img-canvas"></canvas>
+			</aside>
+		</div>
+	</div>
+</div>
