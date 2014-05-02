@@ -65,11 +65,11 @@ define(function (require, exports, module) {
 		};
 
 		// Double check || Close
-		if (!/\.(jpg|gif|png)$/i.test(imageData.imageName)) {
+		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.imageName)) {
 			Dialogs.showModalDialog(
 				_ExtensionID,
 				'Invalid File!',
-				'Please open an image (*.png, *.jpg, *.gif) file to pick colors from.'
+				'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
 			);
 
 			if (isVisible) showPanel(false);
@@ -284,7 +284,7 @@ define(function (require, exports, module) {
 		var selectedItem = ProjectManager.getSelectedItem();
 		projectMenu.removeMenuItem(_ExtensionID);
 
-		if (selectedItem.isFile && /\.(jpg|gif|png)$/i.test(selectedItem.name)) {
+		if (selectedItem.isFile && /\.(jpg|gif|png|ico)$/i.test(selectedItem.name)) {
 			projectMenu.addMenuItem(
 				_ExtensionID, _ExtensionShortcut
 			);
