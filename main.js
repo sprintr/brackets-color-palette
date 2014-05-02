@@ -108,7 +108,7 @@ define(function (require, exports, module) {
 
 			if (panel) {
 				panel.hide();
-				$panel.remove();
+				panel.$panel.remove();
 			}
 				
 			$panel = $(Mustache.render(panelHTML, imageData));
@@ -122,7 +122,7 @@ define(function (require, exports, module) {
 			$icon.removeClass('active');
 			format = 1;
 			panel.hide();
-			$panel.remove();
+			panel.$panel.remove();
 		}
 	}
 
