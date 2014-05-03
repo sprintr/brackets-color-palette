@@ -113,7 +113,7 @@ define(function (require, exports, module) {
 				
 			$panel = $(Mustache.render(panelHTML, imageData));
 			eventController($panel);
-			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 270);
+			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 250);
 			$icon.addClass('active');
 			panel.show();
 		} else {
