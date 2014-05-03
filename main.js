@@ -109,6 +109,7 @@ define(function (require, exports, module) {
 			if (panel) {
 				panel.hide();
 				panel.$panel.remove();
+				format = 1;
 			}
 				
 			$panel = $(Mustache.render(panelHTML, imageData));
