@@ -158,6 +158,9 @@ define(function (require, exports, module) {
 		$panel.on('click', '.preview1, .preview2', function (e) {
 			addToEditor($(this).data('color'));
 		});
+		$panel.on('click', '.selected, .current', function(e) {
+			addToEditor($(this).data('color'));
+		});
 	}
 
 	/**
@@ -183,7 +186,9 @@ define(function (require, exports, module) {
 		}).data({
 			'color': formattedColor
 		});
-		$panel.find('.code-view').html(formattedColor);
+		$panel.find('.current').html(formattedColor).data({
+			'color': formattedColor
+		});
 	}
 
 	// Inserts selected color to the editor
@@ -194,6 +199,9 @@ define(function (require, exports, module) {
 		$panel.find('.preview2').css({
 			'background-color': 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')'
 		}).data({
+			'color': formattedColor
+		});
+		$panel.find('.selected').html(formattedColor).data({
 			'color': formattedColor
 		});
 		addToEditor(formattedColor);
