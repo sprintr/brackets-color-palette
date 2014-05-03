@@ -13,11 +13,12 @@
 	top: 6px;
 }
 #color-palette .span2 {
-	width: 150px;
+	width: 126px;
 	float: left;
 }
 #color-palette .span10 {
 	width: 82%;
+	margin-left: 10px;
 	float: left;
 	overflow: scroll;
 	height: 300px;
@@ -36,8 +37,8 @@
 }
 #color-palette .holder-small {
 	margin-top: 5px;
-	height: 50px;
-	width: 50px;
+	height: 55px;
+	width: 55px;
 	border: 3px solid #ccc;
 	display: inline-block;
 }
@@ -48,8 +49,8 @@
 }
 #color-palette .preview1,
 #color-palette .preview2 {
-	width: 50px;
-	height: 50px;
+	width: 55px;
+	height: 55px;
 	cursor: pointer;
 }
 #color-palette .zoom-preview {
