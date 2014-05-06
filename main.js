@@ -241,7 +241,7 @@ define(function (require, exports, module) {
 			if(i % 15 === 0 && i !== 0) {
 				y++;
 				x -= 14;
-				colors.push(getFormattedColor(getPixelColor([x, y]), 1));
+				colors.push(getFormattedColor(getPixelColor([x-1, y]), 1));
 				continue;
 			}
 			colors.push(getFormattedColor(getPixelColor([x, y]), 1));
