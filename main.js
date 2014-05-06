@@ -156,10 +156,7 @@ define(function (require, exports, module) {
 			e.stopPropagation();
 			insertToEditor(e);
 		});
-		$panel.on('click', '.preview1, .preview2', function (e) {
-			addToEditor($(this).data('color'));
-		});
-		$panel.on('click', '.selected, .current', function(e) {
+		$panel.on('click', '.preview1, .preview2, .selected, .current', function (e) {
 			addToEditor($(this).data('color'));
 		});
 	}
@@ -168,14 +165,10 @@ define(function (require, exports, module) {
 	 * Updates both previews
 	 */
 	function updatePreviews(e) {
-		var coords = [
-			30 - e.offsetX,
-			30 - e.offsetY
-		];
+		var colors = getRangeColors([e.offsetX, e.offsetY]);
 
-		// Update Large Preview
-		$panel.find('.preview').css({
-			'background-position': coords[0] + 'px ' + coords[1] + 'px'
+		$panel.find('i.pixel').each(function(i, elem) {
+			$(elem).css('background-color', colors[i]);
 		});
 
 		// Update Small Preview
@@ -238,6 +231,24 @@ define(function (require, exports, module) {
 			imageData[2], (imageData[3] / 255)
 		];
 	}
+	
+	function getRangeColors(pixel) {
+		var x = pixel[0] - 7,
+			y = pixel[1] - 7;
+		var colors = [];
+		
+		for(var i = 0; i < 225; i++) {
+			if(i % 15 === 0 && i !== 0) {
+				y++;
+				x -= 14;
+				colors.push(getFormattedColor(getPixelColor([x, y]), 1));
+				continue;
+			}
+			colors.push(getFormattedColor(getPixelColor([x, y]), 1));
+			x++;
+		}
+		return colors;
+	}
 
 	// Return a formatted color string
 	function getFormattedColor(color, format) {
@@ -271,7 +282,7 @@ define(function (require, exports, module) {
 	function resizePanel() {
 		if(isVisible && $panel) {
 			var height = panel.$panel.innerHeight() - 48,
-				width = panel.$panel.innerWidth() - 156;
+				width = panel.$panel.innerWidth() - 175;
 			$panel.find('.span10').css({
 				'height': height + 'px',
 				'width': width + 'px'

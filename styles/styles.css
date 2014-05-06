@@ -13,7 +13,7 @@
 	top: 6px;
 }
 #color-palette .span2 {
-	width: 126px;
+	width: 145px;
 	float: left;
 }
 #color-palette .span10 {
@@ -31,30 +31,25 @@
 }
 #color-palette .holder {
 	margin-top: 5px;
-	height: 120px;
-	width: 120px;
+	height: 135px;
+	width: 135px;
 	border: 3px solid #ccc;
 }
 #color-palette .holder-small {
 	margin-top: 5px;
-	height: 55px;
-	width: 55px;
+	height: 40px;
+	width: 40px;
 	border: 3px solid #ccc;
 	display: inline-block;
 }
 #color-palette .zoomed {
-	width: 60px;
-	height: 60px;
-	zoom: 2;
+	position: relative;
 }
 #color-palette .preview1,
 #color-palette .preview2 {
-	width: 55px;
-	height: 55px;
+	width: 40px;
+	height: 40px;
 	cursor: pointer;
-}
-#color-palette .zoom-preview {
-	position: relative;
 }
 #color-palette .guide {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAABqQAAAakBDAYwoQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAkSURBVAiZY/z//38DAxQwMjLCmAxMDDgATgkWZO3///+nwCgAwM4GjmaVwrwAAAAASUVORK5CYII=);
@@ -62,15 +57,15 @@
 }
 #color-palette .x {
 	width: 1px;
-	height: 120px;
+	height: 135px;
 	top: 0;
-	left: 60px;
+	left: 67px;
 }
 #color-palette .y {
 	height: 1px;
-	width: 120px;
+	width: 135px;
 	left: 0;
-	top: 60px;
+	top: 67px;
 }
 #color-palette .panel-img {
 	cursor: crosshair;
@@ -83,4 +78,14 @@
 	margin-left: 10px;
 	font-family: monospace;
 	font-size: 1em;
+}
+i.pixel {
+	display: block;
+	float: left;
+	width: 8px;
+	height: 8px;
+	border: 1px solid rgba(52, 52, 52, 0.13);
+	border-bottom: 0;
+	border-right: 0;
+	background-color: #FFF;
 }
