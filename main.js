@@ -47,22 +47,13 @@ define(function (require, exports, module) {
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
 	var $panel, $image, $icon;
-	var panel, actualPath, isVisible, canvas, context,
-		format = 1,
-		imageData = {
-			imageName: null,
-			imagePath: null
-		};
+	var panel, actualPath, isVisible, canvas, context, format = 1, imageData;
 
 	/**
 	 * Entry-Point to the extension
 	 */
 	function main() {
-
-		imageData = {
-			imageName: ProjectManager.getSelectedItem()._name,
-			imagePath: ProjectManager.getSelectedItem()._path
-		};
+		imageData = getImageData();
 
 		// Double check || Close
 		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.imageName)) {
@@ -276,6 +267,25 @@ define(function (require, exports, module) {
 			parts[0],
 			parts[2]
 		];
+	}
+	
+	function getImageData() {
+		var imagePath,
+			imageName,
+			parts;
+		
+		if(ProjectManager.getSelectedItem()) {
+			imagePath = ProjectManager.getSelectedItem()._path;
+			imageName = ProjectManager.getSelectedItem()._name;
+		} else {
+			imagePath = $('#img-path').text();
+			parts = imagePath.split('/');
+			imageName = parts[parts.length-1];
+		}
+		return {
+			imagePath: imagePath,
+			imageName: imageName
+		};
 	}
 	
 	// Resize image preview
