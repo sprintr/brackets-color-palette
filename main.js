@@ -26,24 +26,29 @@ THE SOFTWARE.
 define(function (require, exports, module) {
 	"use strict";
 
-	var CommandManager	= brackets.getModule('command/CommandManager'),
-		EditorManager	= brackets.getModule('editor/EditorManager'),
-		ExtensionUtils	= brackets.getModule('utils/ExtensionUtils'),
-		Menus			= brackets.getModule('command/Menus'),
-		ProjectManager	= brackets.getModule('project/ProjectManager'),
-		PanelManager	= brackets.getModule('view/PanelManager'),
-		DocumentManager	= brackets.getModule('document/DocumentManager'),
-		Dialogs			= brackets.getModule('widgets/Dialogs');
+	var CommandManager		= brackets.getModule('command/CommandManager'),
+		EditorManager		= brackets.getModule('editor/EditorManager'),
+		ExtensionUtils		= brackets.getModule('utils/ExtensionUtils'),
+		Menus				= brackets.getModule('command/Menus'),
+		ProjectManager		= brackets.getModule('project/ProjectManager'),
+		PanelManager		= brackets.getModule('view/PanelManager'),
+		DocumentManager		= brackets.getModule('document/DocumentManager'),
+		Dialogs				= brackets.getModule('widgets/Dialogs'),
+        PreferencesManager	= brackets.getModule('preferences/PreferencesManager');
 
-	var tinycolor		= require('./lib/tinycolor-min');
-	var panelHTML		= require('text!html/panel.html');
+	var tinycolor	= require('./lib/tinycolor-min');
+	var panelHTML	= require('text!html/panel.html');
 	ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
 
 	// Extension config
 	var _ExtensionID		= "io.brackets.color-palette",
 		_ExtensionLabel		= "Open as Color Palette",
 		_ExtensionShortcut	= "Ctrl-F6";
-
+	
+	var _prefs = PreferencesManager.getExtensionPrefs(_ExtensionID);
+	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
+	_prefs.definePreference('silent', 'boolean', false);
+	
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
 	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, format = 1, imageData;
