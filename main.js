@@ -48,6 +48,7 @@ define(function (require, exports, module) {
 	var _prefs = PreferencesManager.getExtensionPrefs(_ExtensionID);
 	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
 	_prefs.definePreference('silent', 'boolean', false);
+	_prefs.definePreference('format', 'integer', 1);
 	
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
