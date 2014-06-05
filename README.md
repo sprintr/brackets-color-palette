@@ -30,7 +30,6 @@ How to use
 4. Open your CSS file.
 4. Hover on the image and click on your desired colors from the image, the colors will be added to editor.
 
-
 Licence
 -------
 Copyright (c) 2014 Amin Ullah Khan

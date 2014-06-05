@@ -52,7 +52,7 @@ define(function (require, exports, module) {
 	
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
-	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, format = 1, imageData;
+	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData;
 
 	/**
 	 * Entry-Point to the extension
@@ -100,13 +100,10 @@ define(function (require, exports, module) {
 	function showPanel(visible) {
 		if (visible) {
 			isVisible = true;
-
 			if (panel) {
 				panel.hide();
 				panel.$panel.remove();
-				format = 1;
 			}
-				
 			$panel = $(Mustache.render(panelHTML, imageData));
 			eventController($panel);
 			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 250);
@@ -115,7 +112,6 @@ define(function (require, exports, module) {
 		} else {
 			isVisible = false;
 			actualPath = null;
-			format = 1;
 			$icon.removeClass('active');
 			panel.hide();
 			panel.$panel.remove();
@@ -133,11 +129,21 @@ define(function (require, exports, module) {
 	 * Event Controller of the bottom panel
 	 */
 	function eventController($panel) {
+		$panel.find('#color-palette-format')
+			.prop('selectedIndex', _prefs.get('format') - 1)
+			.change(function(e) {
+				_prefs.set('format', parseInt(e.target.value));
+			});
+		
+		if(_prefs.get('copy-to-clipboard')) {
+			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
+		}
+		if(_prefs.get('silent')) {
+			$panel.find('#color-palette-btn-silent').attr('checked', true);
+		}
+		
 		$panel.on('click', '.close', function () {
 			showPanel(false);
-		});
-		$panel.on('change', '.color-model', function () {
-			format = parseInt($(this).val());
 		});
 		$panel.on('mousemove', '.panel-img', function (e) {
 			updatePreviews(e);
@@ -147,6 +153,12 @@ define(function (require, exports, module) {
 		});
 		$panel.on('click', '.preview1, .preview2, .selected, .current', function (e) {
 			addToEditor($(this).data('color'));
+		});
+		$panel.find('#color-palette-btn-clipboard').on('change', function(e) {
+			_prefs.set('copy-to-clipboard', e.target.checked);
+		});
+		$panel.find('#color-palette-btn-silent').on('change', function(e) {
+			_prefs.set('silent', e.target.checked);
 		});
 	}
 
@@ -162,7 +174,7 @@ define(function (require, exports, module) {
 
 		// Update Small Preview
 		var color = getPixelColor([e.offsetX, e.offsetY]),
-			formattedColor = getFormattedColor(color, format);
+			formattedColor = getFormattedColor(color);
 
 		$panel.find('.preview1').css({
 			'background-color': tinycolor(color).toRgbString()
@@ -177,7 +189,7 @@ define(function (require, exports, module) {
 	// Inserts selected color to the editor
 	function insertToEditor(e) {
 		var color = getPixelColor([e.offsetX, e.offsetY]),
-			formattedColor = getFormattedColor(color, format);
+			formattedColor = getFormattedColor(color);
 
 		$panel.find('.preview2').css({
 			'background-color': tinycolor(color).toRgbString()
@@ -195,7 +207,11 @@ define(function (require, exports, module) {
 		var editor = EditorManager.getFocusedEditor();
 
 		if (!editor) {
-			Dialogs.showModalDialog(_ExtensionID, 'Focus!', 'Focus at the text editor');
+			if(!_prefs.get('silent')) {
+				Dialogs.showModalDialog(_ExtensionID, 'Focus!', 'Focus at the text editor');
+			} else {
+				console.error('Focus at the editor to paste color value.');
+			}
 		} else {
 			var doc = editor.document;
 			if (editor.getSelectedText().length > 0) {
@@ -241,10 +257,10 @@ define(function (require, exports, module) {
 	}
 
 	// Return a formatted color string
-	function getFormattedColor(color, format) {
+	function getFormattedColor(color) {
         var cl = tinycolor(color);
 
-		switch (format) {
+		switch (_prefs.get('format')) {
 			case 1:
 				if (color.a < 1)
 					return cl.toRgbString();

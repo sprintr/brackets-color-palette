@@ -1,6 +1,6 @@
 <div id="color-palette" class="bottom-panel vert-resizable top-resizer">
 	<div class="toolbar simple-toolbar-layout">
-		<select name="" class="color-model">
+		<select id="color-palette-format">
 			<option value="1">Hex</option>
 			<option value="2">HSL(a)</option>
 			<option value="3">RGB(a)</option>
@@ -8,8 +8,8 @@
 		<div class="current code-view btn small no-focus" title="Current Color">#000000</div>
 		<div class="selected code-view btn small no-focus" title="Selected Color">#000000</div>
         <div class="options">
-            <label><input type="checkbox" class="btn-clipboard"> Copy to Clipboard</label>
-            <label><input type="checkbox" class="btn-silent"> Silent</label>
+            <label><input type="checkbox" id="color-palette-btn-clipboard"> Copy to Clipboard</label>
+            <label><input type="checkbox" id="color-palette-btn-silent"> Silent</label>
         </div>
 		<div class="toolbar-right"> {{imageName}} </div>
 		<a href="#" class="close">&times;</a>
