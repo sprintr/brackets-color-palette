@@ -165,7 +165,7 @@ define(function (require, exports, module) {
 			formattedColor = getFormattedColor(color, format);
 
 		$panel.find('.preview1').css({
-			'background-color': tinycolor(color).toHexString()
+			'background-color': tinycolor(color).toRgbString()
 		}).data({
 			'color': formattedColor
 		});
@@ -180,7 +180,7 @@ define(function (require, exports, module) {
 			formattedColor = getFormattedColor(color, format);
 
 		$panel.find('.preview2').css({
-			'background-color': tinycolor(color).toHexString()
+			'background-color': tinycolor(color).toRgbString()
 		}).data({
 			'color': formattedColor
 		});
@@ -231,10 +231,10 @@ define(function (require, exports, module) {
 			if(i % 15 === 0 && i !== 0) {
 				y++;
 				x -= 14;
-                colors.push(tinycolor(getPixelColor([x-1, y])).toHexString());
+                colors.push(tinycolor(getPixelColor([x-1, y])).toRgbString());
 				continue;
 			}
-            colors.push(tinycolor(getPixelColor([x, y])).toHexString());
+            colors.push(tinycolor(getPixelColor([x, y])).toRgbString());
 			x++;
 		}
 		return colors;
