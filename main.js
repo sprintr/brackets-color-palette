@@ -46,8 +46,7 @@ define(function (require, exports, module) {
 
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
-	var $panel, $image, $icon;
-	var panel, actualPath, isVisible, canvas, context, format = 1, imageData;
+	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, format = 1, imageData;
 
 	/**
 	 * Entry-Point to the extension
@@ -62,7 +61,6 @@ define(function (require, exports, module) {
 				'Invalid File!',
 				'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
 			);
-
 			if (isVisible) showPanel(false);
 			return;
 		}
@@ -75,17 +73,17 @@ define(function (require, exports, module) {
 			canvas = $panel.find('.img-canvas')[0];
 
 			$image.css({
-				'width': dimension[0] + 'px',
-				'height': dimension[1] + 'px',
-				'max-width': dimension[0] + 'px',
-				'max-height': dimension[1] + 'px'
+				'width': dimension.width + 'px',
+				'height': dimension.height + 'px',
+				'max-width': dimension.width + 'px',
+				'max-height': dimension.height + 'px'
 			});
 
-			canvas.width = dimension[0];
-			canvas.height = dimension[1];
+			canvas.width = dimension.width;
+			canvas.height = dimension.height;
 
 			context = canvas.getContext('2d');
-			context.drawImage($image[0], 0, 0, dimension[0], dimension[1]);
+			context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
 		} else {
 			actualPath = null;
 			showPanel(false);
@@ -111,8 +109,8 @@ define(function (require, exports, module) {
 		} else {
 			isVisible = false;
 			actualPath = null;
-			$icon.removeClass('active');
 			format = 1;
+			$icon.removeClass('active');
 			panel.hide();
 			panel.$panel.remove();
 		}
@@ -132,19 +130,13 @@ define(function (require, exports, module) {
 		$panel.on('click', '.close', function () {
 			showPanel(false);
 		});
-
 		$panel.on('change', '.color-model', function () {
 			format = parseInt($(this).val());
 		});
-
 		$panel.on('mousemove', '.panel-img', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
 			updatePreviews(e);
 		});
 		$panel.on('click', '.panel-img', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
 			insertToEditor(e);
 		});
 		$panel.on('click', '.preview1, .preview2, .selected, .current', function (e) {
@@ -167,7 +159,7 @@ define(function (require, exports, module) {
 			formattedColor = getFormattedColor(color, format);
 
 		$panel.find('.preview1').css({
-			'background-color': 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')'
+			'background-color': tinycolor(color).toHexString()
 		}).data({
 			'color': formattedColor
 		});
@@ -182,7 +174,7 @@ define(function (require, exports, module) {
 			formattedColor = getFormattedColor(color, format);
 
 		$panel.find('.preview2').css({
-			'background-color': 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')'
+			'background-color': tinycolor(color).toHexString()
 		}).data({
 			'color': formattedColor
 		});
@@ -216,11 +208,12 @@ define(function (require, exports, module) {
 	// Return RGBA of a pixel in the current context
 	function getPixelColor(pixel) {
 		var imageData = context.getImageData(pixel[0], pixel[1], 1, 1).data;
-		return [
-			imageData[0],
-			imageData[1],
-			imageData[2], (imageData[3] / 255)
-		];
+        return {
+            r: imageData[0],
+            g: imageData[1],
+            b: imageData[2],
+            a: imageData[3] / 255
+        };
 	}
 	
 	function getRangeColors(pixel) {
@@ -232,10 +225,10 @@ define(function (require, exports, module) {
 			if(i % 15 === 0 && i !== 0) {
 				y++;
 				x -= 14;
-				colors.push(getFormattedColor(getPixelColor([x-1, y]), 1));
+                colors.push(tinycolor(getPixelColor([x-1, y])).toHexString());
 				continue;
 			}
-			colors.push(getFormattedColor(getPixelColor([x, y]), 1));
+            colors.push(tinycolor(getPixelColor([x, y])).toHexString());
 			x++;
 		}
 		return colors;
@@ -243,11 +236,11 @@ define(function (require, exports, module) {
 
 	// Return a formatted color string
 	function getFormattedColor(color, format) {
-		var cl = tinycolor('RGBA(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3] + ')');
+        var cl = tinycolor(color);
 
 		switch (format) {
 			case 1:
-				if (color[3] < 1)
+				if (color.a < 1)
 					return cl.toRgbString();
 	
 				return cl.toHexString();
@@ -263,41 +256,26 @@ define(function (require, exports, module) {
 	// Work around, to get the image dimensions :(
 	function getImageDimensions() {
 		var parts = $('#img-data').html().split(' ');
-		return [
-			parts[0],
-			parts[2]
-		];
+        return {
+            width: parts[0],
+            height: parts[2]
+        };
 	}
 	
 	function getImageData() {
-		var imagePath,
-			imageName,
-			parts;
+		var imagePath, imageName;
 		
 		if(ProjectManager.getSelectedItem()) {
 			imagePath = ProjectManager.getSelectedItem()._path;
 			imageName = ProjectManager.getSelectedItem()._name;
 		} else {
 			imagePath = $('#img-path').text();
-			parts = imagePath.split('/');
-			imageName = parts[parts.length-1];
+            imageName = imagePath.split('/').pop();
 		}
 		return {
 			imagePath: imagePath,
 			imageName: imageName
 		};
-	}
-	
-	// Resize image preview
-	function resizePanel() {
-		if(isVisible && $panel) {
-			var height = panel.$panel.innerHeight() - 48,
-				width = panel.$panel.innerWidth() - 175;
-			$panel.find('.span10').css({
-				'height': height + 'px',
-				'width': width + 'px'
-			});
-		}
 	}
 
 	// add to toolbar
@@ -307,10 +285,19 @@ define(function (require, exports, module) {
 		title: _ExtensionLabel,
 	}).click(main).appendTo($('#main-toolbar .buttons'));
 	
-	$(PanelManager).on('editorAreaResize', resizePanel);
+	$(PanelManager).on('editorAreaResize', function() {
+        if(isVisible && $panel) {
+			var height = panel.$panel.innerHeight() - 48,
+				width = panel.$panel.innerWidth() - 175;
+			$panel.find('.span10').css({
+				'height': height + 'px',
+				'width': width + 'px'
+			});
+		}
+    });
 
 	// Add command to project menu.
-	$(projectMenu).on("beforeContextMenuOpen", function (e) {
+	$(projectMenu).on("beforeContextMenuOpen", function () {
 		var selectedItem = ProjectManager.getSelectedItem();
 		projectMenu.removeMenuItem(_ExtensionID);
 

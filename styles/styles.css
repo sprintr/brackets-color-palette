@@ -79,7 +79,7 @@
 	font-family: monospace;
 	font-size: 1em;
 }
-i.pixel {
+#color-palette i.pixel {
 	display: block;
 	float: left;
 	width: 8px;
