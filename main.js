@@ -34,7 +34,8 @@ define(function (require, exports, module) {
 		PanelManager		= brackets.getModule('view/PanelManager'),
 		DocumentManager		= brackets.getModule('document/DocumentManager'),
 		Dialogs				= brackets.getModule('widgets/Dialogs'),
-        PreferencesManager	= brackets.getModule('preferences/PreferencesManager');
+        PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
+		AppInit				= brackets.getModule('utils/AppInit');
 
 	var tinycolor	= require('./lib/tinycolor-min');
 	var panelHTML	= require('text!html/panel.html');
@@ -42,8 +43,8 @@ define(function (require, exports, module) {
 
 	// Extension config
 	var _ExtensionID		= "io.brackets.color-palette",
-		_ExtensionLabel		= "Open as Color Palette",
-		_ExtensionShortcut	= "Ctrl-F6";
+		_ExtensionLabel		= "Color Palette",
+		_ExtensionShortcut	= "Alt-F6";
 	
 	var _prefs = PreferencesManager.getExtensionPrefs(_ExtensionID);
 	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
@@ -105,12 +106,14 @@ define(function (require, exports, module) {
 			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 250);
 			$icon.addClass('active');
 			panel.show();
+			CommandManager.get(_ExtensionID).setChecked(true);
 		} else {
 			isVisible = false;
 			actualPath = null;
 			$icon.removeClass('active');
 			panel.hide();
 			panel.$panel.remove();
+			CommandManager.get(_ExtensionID).setChecked(false);
 		}
 	}
 
@@ -318,6 +321,13 @@ define(function (require, exports, module) {
 			});
 		}
     });
+	
+	// Add to View Menu
+	AppInit.appReady(function() {
+		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
+		CommandManager.register(_ExtensionLabel, _ExtensionID, main);
+		menu.addMenuItem(_ExtensionID, _ExtensionShortcut);
+	});
 
 	// Add command to project menu.
 	$(projectMenu).on("beforeContextMenuOpen", function () {

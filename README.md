@@ -25,10 +25,13 @@ Clone this repository in your extensions directory
 How to use
 ----------
 1. View an image in brackets.
-2. Right click and open `Open as Color Palette`.
+
+2. Right click on the filename in project tree and open `Color Palette`.
 3. OR: Click the palette icon in the toolbar.
-4. Open your CSS file.
-4. Hover on the image and click on your desired colors from the image, the colors will be added to editor.
+4: OR: Open `Color Palette` from View menu.
+5: OR: Press `Alt+F6`.
+6. Open your CSS file.
+7. Hover on the image and click on your desired colors from the image, the colors will be added to editor.
 
 Licence
 -------
