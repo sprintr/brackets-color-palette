@@ -198,6 +198,7 @@ define(function (require, exports, module) {
 			'color': formattedColor
 		});
 		if(_prefs.get('copy-to-clipboard')) {
+			copyToClipboard(formattedColor);
 			return;
 		}
 		addToEditor(formattedColor);
@@ -303,6 +304,16 @@ define(function (require, exports, module) {
 			imagePath: imagePath,
 			imageName: imageName
 		};
+	}
+	
+	// Copy text to clipboard
+	function copyToClipboard(text) {
+		var textarea = $('<textarea/>');
+    	textarea.text(text);
+    	$('body').append(textarea);
+    	textarea.select();
+    	document.execCommand('copy');
+    	textarea.remove();
 	}
 
 	// add to toolbar
