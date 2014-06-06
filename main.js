@@ -142,12 +142,13 @@ define(function (require, exports, module) {
 		$panel.on('click', '.close', function () {
 			showPanel(false);
 		});
-		$panel.on('mousemove', '.panel-img', function (e) {
-			updatePreviews(e);
-		});
-		$panel.on('click', '.panel-img', function (e) {
-			insertToEditor(e);
-		});
+		$panel.find('.panel-img')
+			.on('mousemove', function(e) {
+				updatePreviews(e);
+			})
+			.on('click', function(e) {
+				insertToEditor(e);
+			});
 		$panel.on('click', '.preview1, .preview2, .selected, .current', function (e) {
 			addToEditor($(this).data('color'));
 		});
