@@ -10,8 +10,11 @@ Features
 --------
 1. Select color codes from images directly.
 2. Hex, RGB(a), HSL(a) are the available color models.
+3. **Silent**: Log errors to devTools.
+4. **Copy to Clipboard**: Copy colors to clipboard instead of pasting in editor.
+5. Preferences are now saved.
 
-How to install
+How To Install
 --------------
 1.	Open `File` > `Extension Manager`.
 2.	Select `Available` Tab.
@@ -20,18 +23,22 @@ How to install
 
 OR
 
-Clone this repository in your extensions directory
+Clone this repository in your extensions directory.
 
-How to use
+How To Use
 ----------
 1. View an image in brackets.
 
 2. Right click on the filename in project tree and open `Color Palette`.
 3. OR: Click the palette icon in the toolbar.
-4: OR: Open `Color Palette` from View menu.
-5: OR: Press `Alt+F6`.
+4. OR: Open `Color Palette` from View menu.
+5. OR: Press `Alt+F6`.
 6. Open your CSS file.
 7. Hover on the image and click on your desired colors from the image, the colors will be added to editor.
+
+Third Party Tools
+---------------
+[TinyColor](https://github.com/bgrins/TinyColor) A fast JavaScript color manipulation micro framework
 
 Licence
 -------
