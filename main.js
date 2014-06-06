@@ -52,7 +52,7 @@ define(function (require, exports, module) {
 	
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
-	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData;
+	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension;
 
 	/**
 	 * Entry-Point to the extension
@@ -63,9 +63,7 @@ define(function (require, exports, module) {
 		// Double check || Close
 		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.imageName)) {
 			Dialogs.showModalDialog(
-				_ExtensionID,
-				'Invalid File!',
-				'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
+				_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
 			);
 			if (isVisible) showPanel(false);
 			return;
@@ -74,7 +72,7 @@ define(function (require, exports, module) {
 		if (actualPath !== imageData.imagePath) {
 			actualPath = imageData.imagePath;
 			showPanel(true);
-			var dimension = getImageDimensions();
+			dimension = getImageDimensions();
 			$image = $panel.find('.panel-img');
 			canvas = $panel.find('.img-canvas')[0];
 
@@ -84,10 +82,8 @@ define(function (require, exports, module) {
 				'max-width': dimension.width + 'px',
 				'max-height': dimension.height + 'px'
 			});
-
 			canvas.width = dimension.width;
 			canvas.height = dimension.height;
-
 			context = canvas.getContext('2d');
 			context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
 		} else {
@@ -120,9 +116,7 @@ define(function (require, exports, module) {
 
 	// Register command.
 	var _Command = CommandManager.register(
-		_ExtensionLabel,
-		_ExtensionID,
-		main
+		_ExtensionLabel, _ExtensionID, main
 	);
 
 	/**
@@ -199,6 +193,9 @@ define(function (require, exports, module) {
 		$panel.find('.selected').html(formattedColor).data({
 			'color': formattedColor
 		});
+		if(_prefs.get('copy-to-clipboard')) {
+			return;
+		}
 		addToEditor(formattedColor);
 	}
 
@@ -208,15 +205,19 @@ define(function (require, exports, module) {
 
 		if (!editor) {
 			if(!_prefs.get('silent')) {
-				Dialogs.showModalDialog(_ExtensionID, 'Focus!', 'Focus at the text editor');
+				Dialogs.showModalDialog(_ExtensionID, 'Warning: Focus at the editor!', 'Focus at the editor to paste color value.');
 			} else {
-				console.error('Focus at the editor to paste color value.');
+				console.warn('['+_ExtensionID+'] Focus at the editor to paste color value.');
 			}
 		} else {
 			var doc = editor.document;
 			if (editor.getSelectedText().length > 0) {
 				var selection = editor.getSelection();
-				doc.replaceRange(string, selection.start, selection.end);
+				if(editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && _prefs.get('format') === 1) {
+					doc.replaceRange(string.substr(1), selection.start, selection.end);
+				} else {
+					doc.replaceRange(string, selection.start, selection.end);
+				}
 			} else {
 				var pos = editor.getCursorPos();
 				doc.replaceRange(string, {
