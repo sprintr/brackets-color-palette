@@ -20,7 +20,7 @@
     width: 82%;
     margin-left: 10px;
     float: left;
-    overflow: scroll;
+    overflow: auto;
     height: 300px;
 }
 #color-palette .transparent {
