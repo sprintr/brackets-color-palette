@@ -28,7 +28,6 @@ Clone this repository in your extensions directory.
 How To Use
 ----------
 1. View an image in brackets.
-
 2. Right click on the filename in project tree and open `Color Palette`.
 3. OR: Click the palette icon in the toolbar.
 4. OR: Open `Color Palette` from View menu.
@@ -38,7 +37,7 @@ How To Use
 
 Third Party Tools
 ---------------
-[TinyColor](https://github.com/bgrins/TinyColor) A fast JavaScript color manipulation micro framework
+[TinyColor](https://github.com/bgrins/TinyColor) A fast JavaScript color manipulation micro framework.
 
 Licence
 -------
