@@ -62,7 +62,7 @@ define(function (require, exports, module) {
 		imageData = getImageData();
 
 		// Double check || Close
-		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.imageName)) {
+		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.name)) {
 			Dialogs.showModalDialog(
 				_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
 			);
@@ -70,8 +70,8 @@ define(function (require, exports, module) {
 			return;
 		}
 
-		if (actualPath !== imageData.imagePath) {
-			actualPath = imageData.imagePath;
+		if (actualPath !== imageData.path) {
+			actualPath = imageData.path;
 			showPanel(true);
 			dimension = getImageDimensions();
 			$image = $panel.find('.panel-img');
@@ -291,19 +291,24 @@ define(function (require, exports, module) {
 	}
 	
 	function getImageData() {
-		var imagePath, imageName;
+        var imageData = {};
 		
 		if(ProjectManager.getSelectedItem()) {
-			imagePath = ProjectManager.getSelectedItem()._path;
-			imageName = ProjectManager.getSelectedItem()._name;
+			imageData = {
+                path: ProjectManager.getSelectedItem()._path,
+                name: ProjectManager.getSelectedItem()._name
+            };
 		} else {
-			imagePath = $('#img-path').text();
-            imageName = imagePath.split('/').pop();
+            imageData.path = $('#img-path').text();
+            imageData.name = imageData.path.split('/').pop();
 		}
-		return {
-			imagePath: imagePath,
-			imageName: imageName
-		};
+        
+        imageData.title = imageData.name;
+        if(imageData.name.length > 35) {
+            imageData.title = imageData.name.substr(0, 25) + '...' + imageData.name.substr(-3);
+        }
+        
+        return imageData;
 	}
 	
 	// Copy text to clipboard
