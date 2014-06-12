@@ -23,7 +23,7 @@ THE SOFTWARE.
 /*jslint vars: true, plusplus: true, eqeq: true, devel: true, nomen: true,  regexp: true, indent: 4, maxerr: 50 */
 /*global define, brackets, $, window, document, Mustache, PathUtils */
 
-define(function (require, exports, module) {
+define(function(require, exports, module) {
 	"use strict";
 
 	var CommandManager		= brackets.getModule('command/CommandManager'),
@@ -34,17 +34,17 @@ define(function (require, exports, module) {
 		PanelManager		= brackets.getModule('view/PanelManager'),
 		DocumentManager		= brackets.getModule('document/DocumentManager'),
 		Dialogs				= brackets.getModule('widgets/Dialogs'),
-        PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
+		PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
 		AppInit				= brackets.getModule('utils/AppInit');
 
-	var tinycolor	= require('./lib/tinycolor-min');
-	var panelHTML	= require('text!html/panel.html');
+	var tinycolor = require('./lib/tinycolor-min');
+	var panelHTML = require('text!html/panel.html');
 	ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
 
 	// Extension config
-	var _ExtensionID		= "io.brackets.color-palette",
-		_ExtensionLabel		= "Color Palette",
-		_ExtensionShortcut	= "Alt-F6";
+	var _ExtensionID = "io.brackets.color-palette",
+		_ExtensionLabel = "Color Palette",
+		_ExtensionShortcut = "Alt-F6";
 	
 	var _prefs = PreferencesManager.getExtensionPrefs(_ExtensionID);
 	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
@@ -52,10 +52,11 @@ define(function (require, exports, module) {
 	_prefs.definePreference('format', 'integer', 1);
 	
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
-
+	
 	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension;
-
+	
 	/**
+	 *
 	 * Entry-Point to the extension
 	 */
 	function main() {
@@ -64,9 +65,9 @@ define(function (require, exports, module) {
 		// Double check || Close
 		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.name)) {
 			Dialogs.showModalDialog(
-				_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
-			);
-			if (isVisible) showPanel(false);
+			_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
+		);
+		if (isVisible) showPanel(false);
 			return;
 		}
 
@@ -131,15 +132,15 @@ define(function (require, exports, module) {
 			.change(function(e) {
 				_prefs.set('format', parseInt(e.target.value));
 			});
-		
-		if(_prefs.get('copy-to-clipboard')) {
+
+		if (_prefs.get('copy-to-clipboard')) {
 			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
 		}
-		if(_prefs.get('silent')) {
+		if (_prefs.get('silent')) {
 			$panel.find('#color-palette-btn-silent').attr('checked', true);
 		}
-		
-		$panel.on('click', '.close', function () {
+
+		$panel.on('click', '.close', function() {
 			showPanel(false);
 		});
 		$panel.find('.panel-img')
@@ -149,7 +150,7 @@ define(function (require, exports, module) {
 			.on('click', function(e) {
 				insertToEditor(e);
 			});
-		$panel.on('click', '.preview1, .preview2, .selected, .current', function (e) {
+		$panel.on('click', '.preview1, .preview2, .selected, .current', function(e) {
 			addToEditor($(this).data('color'));
 		});
 		$panel.find('#color-palette-btn-clipboard').on('change', function(e) {
@@ -161,8 +162,8 @@ define(function (require, exports, module) {
 	}
 
 	/**
-	 * Updates both previews
-	 */
+	* Updates both previews
+	*/
 	function updatePreviews(e) {
 		var colors = getRangeColors([e.offsetX, e.offsetY]);
 
@@ -197,7 +198,7 @@ define(function (require, exports, module) {
 		$panel.find('.selected').html(formattedColor).data({
 			'color': formattedColor
 		});
-		if(_prefs.get('copy-to-clipboard')) {
+		if (_prefs.get('copy-to-clipboard')) {
 			copyToClipboard(formattedColor);
 			return;
 		}
@@ -209,16 +210,16 @@ define(function (require, exports, module) {
 		var editor = EditorManager.getFocusedEditor();
 
 		if (!editor) {
-			if(!_prefs.get('silent')) {
+			if (!_prefs.get('silent')) {
 				Dialogs.showModalDialog(_ExtensionID, 'Warning: Focus at the editor!', 'Focus at the editor to paste color value.');
 			} else {
-				console.warn('['+_ExtensionID+'] Focus at the editor to paste color value.');
+				console.warn('[' + _ExtensionID + '] Focus at the editor to paste color value.');
 			}
 		} else {
 			var doc = editor.document;
 			if (editor.getSelectedText().length > 0) {
 				var selection = editor.getSelection();
-				if(editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && _prefs.get('format') === 1) {
+				if (editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && _prefs.get('format') === 1) {
 					doc.replaceRange(string.substr(1), selection.start, selection.end);
 				} else {
 					doc.replaceRange(string, selection.start, selection.end);
@@ -236,27 +237,27 @@ define(function (require, exports, module) {
 	// Return RGBA of a pixel in the current context
 	function getPixelColor(pixel) {
 		var imageData = context.getImageData(pixel[0], pixel[1], 1, 1).data;
-        return {
-            r: imageData[0],
-            g: imageData[1],
-            b: imageData[2],
-            a: imageData[3] / 255
-        };
+		return {
+			r: imageData[0],
+			g: imageData[1],
+			b: imageData[2],
+			a: imageData[3] / 255
+		};
 	}
-	
+
 	function getRangeColors(pixel) {
 		var x = pixel[0] - 7,
 			y = pixel[1] - 7;
 		var colors = [];
-		
-		for(var i = 0; i < 225; i++) {
-			if(i % 15 === 0 && i !== 0) {
+
+		for (var i = 0; i < 225; i++) {
+			if (i % 15 === 0 && i !== 0) {
 				y++;
 				x -= 14;
-                colors.push(tinycolor(getPixelColor([x-1, y])).toRgbString());
+				colors.push(tinycolor(getPixelColor([x - 1, y])).toRgbString());
 				continue;
 			}
-            colors.push(tinycolor(getPixelColor([x, y])).toRgbString());
+			colors.push(tinycolor(getPixelColor([x, y])).toRgbString());
 			x++;
 		}
 		return colors;
@@ -264,13 +265,13 @@ define(function (require, exports, module) {
 
 	// Return a formatted color string
 	function getFormattedColor(color) {
-        var cl = tinycolor(color);
+		var cl = tinycolor(color);
 
 		switch (_prefs.get('format')) {
 			case 1:
 				if (color.a < 1)
 					return cl.toRgbString();
-	
+
 				return cl.toHexString();
 			case 2:
 				return cl.toHslString();
@@ -284,41 +285,41 @@ define(function (require, exports, module) {
 	// Work around, to get the image dimensions :(
 	function getImageDimensions() {
 		var parts = $('#img-data').html().split(' ');
-        return {
-            width: parts[0],
-            height: parts[2]
-        };
+		return {
+			width: parts[0],
+			height: parts[2]
+		};
 	}
-	
+
 	function getImageData() {
-        var imageData = {};
-		
-		if(ProjectManager.getSelectedItem()) {
+		var imageData = {};
+
+		if (ProjectManager.getSelectedItem()) {
 			imageData = {
-                path: ProjectManager.getSelectedItem()._path,
-                name: ProjectManager.getSelectedItem()._name
-            };
+				path: ProjectManager.getSelectedItem()._path,
+				name: ProjectManager.getSelectedItem()._name
+			};
 		} else {
-            imageData.path = $('#img-path').text();
-            imageData.name = imageData.path.split('/').pop();
+			imageData.path = $('#img-path').text();
+			imageData.name = imageData.path.split('/').pop();
 		}
-        
-        imageData.title = imageData.name;
-        if(imageData.name.length > 35) {
-            imageData.title = imageData.name.substr(0, 25) + '...' + imageData.name.substr(-3);
-        }
-        
-        return imageData;
+
+		imageData.title = imageData.name;
+		if (imageData.name.length > 35) {
+			imageData.title = imageData.name.substr(0, 25) + '...' + imageData.name.substr(-3);
+		}
+
+		return imageData;
 	}
-	
+
 	// Copy text to clipboard
 	function copyToClipboard(text) {
 		var textarea = $('<textarea/>');
-    	textarea.text(text);
-    	$('body').append(textarea);
-    	textarea.select();
-    	document.execCommand('copy');
-    	textarea.remove();
+		textarea.text(text);
+		$('body').append(textarea);
+		textarea.select();
+		document.execCommand('copy');
+		textarea.remove();
 	}
 
 	// add to toolbar
@@ -327,9 +328,9 @@ define(function (require, exports, module) {
 		href: '#',
 		title: _ExtensionLabel,
 	}).click(main).appendTo($('#main-toolbar .buttons'));
-	
+
 	$(PanelManager).on('editorAreaResize', function() {
-        if(isVisible && $panel) {
+		if (isVisible && $panel) {
 			var height = panel.$panel.innerHeight() - 48,
 				width = panel.$panel.innerWidth() - 175;
 			$panel.find('.span10').css({
@@ -337,8 +338,8 @@ define(function (require, exports, module) {
 				'width': width + 'px'
 			});
 		}
-    });
-	
+	});
+
 	// Add to View Menu
 	AppInit.appReady(function() {
 		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
@@ -347,14 +348,12 @@ define(function (require, exports, module) {
 	});
 
 	// Add command to project menu.
-	$(projectMenu).on("beforeContextMenuOpen", function () {
+	$(projectMenu).on("beforeContextMenuOpen", function() {
 		var selectedItem = ProjectManager.getSelectedItem();
 		projectMenu.removeMenuItem(_ExtensionID);
 
 		if (selectedItem.isFile && /\.(jpg|gif|png|ico)$/i.test(selectedItem.name)) {
-			projectMenu.addMenuItem(
-				_ExtensionID, _ExtensionShortcut
-			);
+			projectMenu.addMenuItem(_ExtensionID, _ExtensionShortcut);
 		}
 	});
 });
