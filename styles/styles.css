@@ -33,17 +33,17 @@
     margin-top: 5px;
     height: 135px;
     width: 135px;
-    border: 3px solid #ccc;
+    border: 2px solid #ccc;
+    border-top-width: 1px;
+    border-left-width: 1px;
+    position: relative;
 }
 #color-palette .holder-small {
     margin-top: 5px;
     height: 40px;
     width: 40px;
-    border: 3px solid #ccc;
+    border: 1px solid #ccc;
     display: inline-block;
-}
-#color-palette .zoomed {
-    position: relative;
 }
 #color-palette .preview1,
 #color-palette .preview2 {
