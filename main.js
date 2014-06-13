@@ -247,8 +247,8 @@ define(function(require, exports, module) {
 
 	function getRangeColors(pixel) {
 		var x = pixel[0] - 7,
-			y = pixel[1] - 7;
-		var colors = [];
+			y = pixel[1] - 7,
+			colors = [];
 
 		for (var i = 0; i < 225; i++) {
 			if (i % 15 === 0 && i !== 0) {
@@ -314,12 +314,12 @@ define(function(require, exports, module) {
 
 	// Copy text to clipboard
 	function copyToClipboard(text) {
-		var textarea = $('<textarea/>');
-		textarea.text(text);
-		$('body').append(textarea);
-		textarea.select();
+		var $textarea = $('<textarea/>');
+		$textarea.text(text);
+		$('body').append($textarea);
+		$textarea.select();
 		document.execCommand('copy');
-		textarea.remove();
+		$textarea.remove();
 	}
 
 	// add to toolbar
