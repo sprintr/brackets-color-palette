@@ -63,9 +63,9 @@ define(function(require, exports, module) {
 		imageData = getImageData();
 
 		// Double check || Close
-		if (!/\.(jpg|gif|png|ico)$/i.test(imageData.name)) {
+		if (!/\.(jpg|jpeg|gif|png|ico)$/i.test(imageData.name)) {
 			Dialogs.showModalDialog(
-			_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.gif, *.ico) file to pick colors from.'
+			_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.jpeg, *.gif, *.ico) file to pick colors from.'
 		);
 		if (isVisible) showPanel(false);
 			return;
