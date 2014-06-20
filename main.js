@@ -352,7 +352,7 @@ define(function(require, exports, module) {
 		var selectedItem = ProjectManager.getSelectedItem();
 		projectMenu.removeMenuItem(_ExtensionID);
 
-		if (selectedItem.isFile && /\.(jpg|gif|png|ico)$/i.test(selectedItem.name)) {
+		if (selectedItem.isFile && /\.(jpg|jpeg|gif|png|ico)$/i.test(selectedItem.name)) {
 			projectMenu.addMenuItem(_ExtensionID, _ExtensionShortcut);
 		}
 	});
