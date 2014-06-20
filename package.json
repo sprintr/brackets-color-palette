@@ -3,7 +3,7 @@
 	"title": "Brackets Color Palette",
 	"description": "Pick colors directly from images (*.png, *.jpg, *.jpeg, *.gif, *.ico)",
 	"homepage": "https://github.com/sprintr/brackets-color-palette",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"author": "Amin Ullah Khan <aminullah@outlook.com> (https://github.com/sprintr)",
 	"licence": "MIT",
 	"engines": {
