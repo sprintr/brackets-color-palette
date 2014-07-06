@@ -32,7 +32,6 @@ define(function(require, exports, module) {
 		Menus				= brackets.getModule('command/Menus'),
 		ProjectManager		= brackets.getModule('project/ProjectManager'),
 		PanelManager		= brackets.getModule('view/PanelManager'),
-		DocumentManager		= brackets.getModule('document/DocumentManager'),
 		Dialogs				= brackets.getModule('widgets/Dialogs'),
 		PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
 		AppInit				= brackets.getModule('utils/AppInit');
