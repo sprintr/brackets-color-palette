@@ -201,6 +201,7 @@ define(function(require, exports, module) {
 	// Add a string to the focused editor
 	function addToEditor(string) {
 		var editor = EditorManager.getActiveEditor();
+		editor.focus();
 
 		var doc = editor.document;
 		if (editor.getSelectedText().length > 0) {
