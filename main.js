@@ -207,7 +207,7 @@ define(function(require, exports, module) {
 
 	// Add a string to the focused editor
 	function addToEditor(string) {
-		var editor = EditorManager.getFocusedEditor();
+		var editor = EditorManager.getActiveEditor();
 
 		if (!editor) {
 			if (!_prefs.get('silent')) {
