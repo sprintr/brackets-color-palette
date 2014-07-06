@@ -48,7 +48,6 @@ define(function(require, exports, module) {
 	
 	var _prefs = PreferencesManager.getExtensionPrefs(_ExtensionID);
 	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
-	_prefs.definePreference('silent', 'boolean', false);
 	_prefs.definePreference('format', 'integer', 1);
 	
 	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
@@ -136,9 +135,6 @@ define(function(require, exports, module) {
 		if (_prefs.get('copy-to-clipboard')) {
 			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
 		}
-		if (_prefs.get('silent')) {
-			$panel.find('#color-palette-btn-silent').attr('checked', true);
-		}
 
 		$panel.on('click', '.close', function() {
 			showPanel(false);
@@ -155,9 +151,6 @@ define(function(require, exports, module) {
 		});
 		$panel.find('#color-palette-btn-clipboard').on('change', function(e) {
 			_prefs.set('copy-to-clipboard', e.target.checked);
-		});
-		$panel.find('#color-palette-btn-silent').on('change', function(e) {
-			_prefs.set('silent', e.target.checked);
 		});
 	}
 
@@ -209,28 +202,20 @@ define(function(require, exports, module) {
 	function addToEditor(string) {
 		var editor = EditorManager.getActiveEditor();
 
-		if (!editor) {
-			if (!_prefs.get('silent')) {
-				Dialogs.showModalDialog(_ExtensionID, 'Warning: Focus at the editor!', 'Focus at the editor to paste color value.');
+		var doc = editor.document;
+		if (editor.getSelectedText().length > 0) {
+			var selection = editor.getSelection();
+			if (editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && _prefs.get('format') === 1) {
+				doc.replaceRange(string.substr(1), selection.start, selection.end);
 			} else {
-				console.warn('[' + _ExtensionID + '] Focus at the editor to paste color value.');
+				doc.replaceRange(string, selection.start, selection.end);
 			}
 		} else {
-			var doc = editor.document;
-			if (editor.getSelectedText().length > 0) {
-				var selection = editor.getSelection();
-				if (editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && _prefs.get('format') === 1) {
-					doc.replaceRange(string.substr(1), selection.start, selection.end);
-				} else {
-					doc.replaceRange(string, selection.start, selection.end);
-				}
-			} else {
-				var pos = editor.getCursorPos();
-				doc.replaceRange(string, {
-					line: pos.line,
-					ch: pos.ch
-				});
-			}
+			var pos = editor.getCursorPos();
+			doc.replaceRange(string, {
+				line: pos.line,
+				ch: pos.ch
+			});
 		}
 	}
 
