@@ -269,7 +269,8 @@ define(function(require, exports, module) {
 
 	// Work around, to get the image dimensions :(
 	function getImageDimensions() {
-		var parts = $('#img-data').html().split(' ');
+		var $imageData = $('#img-data').html() || $('.image-data').html(),
+			parts = $imageData.split(' ');
 		return {
 			width: parts[0],
 			height: parts[2]
