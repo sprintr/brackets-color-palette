@@ -1,24 +1,24 @@
 /*
-Copyright (c) 2014 Amin Ullah Khan
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
+ * Copyright (c) 2014 Amin Ullah Khan
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 /*jslint vars: true, plusplus: true, eqeq: true, devel: true, nomen: true,  regexp: true, indent: 4, maxerr: 50 */
 /*global define, brackets, $, window, document, Mustache, PathUtils */
@@ -34,44 +34,39 @@ define(function(require, exports, module) {
 		PanelManager		= brackets.getModule('view/PanelManager'),
 		Dialogs				= brackets.getModule('widgets/Dialogs'),
 		PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
-		AppInit				= brackets.getModule('utils/AppInit');
-
-	var tinycolor = require('./lib/tinycolor-min');
-	var panelHTML = require('text!html/panel.html');
-	ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
+		AppInit				= brackets.getModule('utils/AppInit'),
+		tinycolor			= require('./lib/tinycolor-min'),
+		panelHTML			= require('text!html/panel.html');
 
 	// Extension config
-	var _ExtensionID = "io.brackets.color-palette",
-		_ExtensionLabel = "Color Palette",
-		_ExtensionShortcut = "Alt-F6";
+	var _ExtensionID		= "io.brackets.color-palette",
+		_ExtensionLabel		= "Color Palette",
+		_ExtensionShortcut	= "Alt-F6";
+
+	var projectMenu	= Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 	
 	var _prefs = PreferencesManager.getExtensionPrefs(_ExtensionID);
 	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
 	_prefs.definePreference('format', 'integer', 1);
-	
-	var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
-	
+
 	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension;
-	
-	/**
-	 *
-	 * Entry-Point to the extension
-	 */
-	function main() {
+
+	function _ExecMain() {
 		imageData = getImageData();
 
 		// Double check || Close
 		if (!/\.(jpg|jpeg|gif|png|ico)$/i.test(imageData.name)) {
 			Dialogs.showModalDialog(
-			_ExtensionID, 'Invalid File!', 'Please open an image (*.png, *.jpg, *.jpeg, *.gif, *.ico) file to pick colors from.'
-		);
-		if (isVisible) showPanel(false);
+				_ExtensionID, 'Information', 'Please open an image or icon to pick colors from.'
+			);
+			if (isVisible)
+				setPanelVisibility(false);
 			return;
 		}
 
 		if (actualPath !== imageData.path) {
 			actualPath = imageData.path;
-			showPanel(true);
+			setPanelVisibility(true);
 			dimension = getImageDimensions();
 			$image = $panel.find('.panel-img');
 			canvas = $panel.find('.img-canvas')[0];
@@ -88,12 +83,12 @@ define(function(require, exports, module) {
 			context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
 		} else {
 			actualPath = null;
-			showPanel(false);
+			setPanelVisibility(false);
 		}
 	}
 
 	// Show/Hide the bottom panel.
-	function showPanel(visible) {
+	function setPanelVisibility(visible) {
 		if (visible) {
 			isVisible = true;
 			if (panel) {
@@ -101,7 +96,7 @@ define(function(require, exports, module) {
 				panel.$panel.remove();
 			}
 			$panel = $(Mustache.render(panelHTML, imageData));
-			eventController($panel);
+			_EventController($panel);
 			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 250);
 			$icon.addClass('active');
 			panel.show();
@@ -110,21 +105,14 @@ define(function(require, exports, module) {
 			isVisible = false;
 			actualPath = null;
 			$icon.removeClass('active');
-			panel.hide();
+		panel.hide();
 			panel.$panel.remove();
 			CommandManager.get(_ExtensionID).setChecked(false);
 		}
 	}
 
-	// Register command.
-	var _Command = CommandManager.register(
-		_ExtensionLabel, _ExtensionID, main
-	);
-
-	/**
-	 * Event Controller of the bottom panel
-	 */
-	function eventController($panel) {
+	// Event Controller of the bottom panel
+	function _EventController($panel) {
 		$panel.find('#color-palette-format')
 			.prop('selectedIndex', _prefs.get('format') - 1)
 			.change(function(e) {
@@ -136,7 +124,7 @@ define(function(require, exports, module) {
 		}
 
 		$panel.on('click', '.close', function() {
-			showPanel(false);
+			setPanelVisibility(false);
 		});
 		$panel.find('.panel-img')
 			.on('mousemove', function(e) {
@@ -153,11 +141,9 @@ define(function(require, exports, module) {
 		});
 	}
 
-	/**
-	* Updates both previews
-	*/
+	// Updates both previews
 	function updatePreviews(e) {
-		var colors = getRangeColors([e.offsetX, e.offsetY]);
+		var colors = getGridColors([e.offsetX, e.offsetY]);
 
 		$panel.find('i.pixel').each(function(i, elem) {
 			$(elem).css('background-color', colors[i]);
@@ -197,7 +183,7 @@ define(function(require, exports, module) {
 		addToEditor(formattedColor);
 	}
 
-	// Add a string to the focused editor
+	// Add a string to the editor
 	function addToEditor(string) {
 		var editor = EditorManager.getActiveEditor();
 		editor.focus();
@@ -230,7 +216,8 @@ define(function(require, exports, module) {
 		};
 	}
 
-	function getRangeColors(pixel) {
+	// Get colors across the grid
+	function getGridColors(pixel) {
 		var x = pixel[0] - 7,
 			y = pixel[1] - 7,
 			colors = [];
@@ -294,14 +281,12 @@ define(function(require, exports, module) {
 		if (imageData.name.length > 35) {
 			imageData.title = imageData.name.substr(0, 25) + '...' + imageData.name.substr(-3);
 		}
-
 		return imageData;
 	}
 
 	// Copy text to clipboard
 	function copyToClipboard(text) {
-		var $textarea = $('<textarea/>');
-		$textarea.text(text);
+		var $textarea = $('<textarea/>').text(text);
 		$('body').append($textarea);
 		$textarea.select();
 		document.execCommand('copy');
@@ -313,8 +298,17 @@ define(function(require, exports, module) {
 		id: 'color-palette-icon',
 		href: '#',
 		title: _ExtensionLabel,
-	}).click(main).appendTo($('#main-toolbar .buttons'));
+	}).click(_ExecMain).appendTo($('#main-toolbar .buttons'));
 
+	// Add to View Menu
+	AppInit.appReady(function() {
+		ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
+		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
+		CommandManager.register(_ExtensionLabel, _ExtensionID, _ExecMain);
+		menu.addMenuItem(_ExtensionID, _ExtensionShortcut);
+	});
+
+	// Resize
 	$(PanelManager).on('editorAreaResize', function() {
 		if (isVisible && $panel) {
 			var height = panel.$panel.innerHeight() - 48,
@@ -324,13 +318,6 @@ define(function(require, exports, module) {
 				'width': width + 'px'
 			});
 		}
-	});
-
-	// Add to View Menu
-	AppInit.appReady(function() {
-		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
-		CommandManager.register(_ExtensionLabel, _ExtensionID, main);
-		menu.addMenuItem(_ExtensionID, _ExtensionShortcut);
 	});
 
 	// Add command to project menu.
