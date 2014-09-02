@@ -10,9 +10,7 @@ Features
 --------
 1. Select color codes from images directly.
 2. Hex, RGB(a), HSL(a) are the available color models.
-3. **Silent**: Log errors to devTools.
-4. **Copy to Clipboard**: Copy colors to clipboard instead of pasting in editor.
-5. Preferences are now saved.
+3. Copy colors to clipboard instead of pasting in editor.
 
 How To Install
 --------------
