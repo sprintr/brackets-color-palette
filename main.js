@@ -282,7 +282,7 @@ define(function (require, exports, module) {
 
 	// Work around, to get the image dimensions :(
 	function getImageDimensions() {
-		var imageData = $('.active-pane .image-data').html() || $('.image-data').html(),
+		var imageData = $('.active-pane .image-data:visible').html() || $('.image-data:visible').html(),
 			segments = imageData.split(' ');
 		return {
 			width: segments[0],
