@@ -23,7 +23,7 @@
 /*jslint vars: true, plusplus: true, eqeq: true, devel: true, nomen: true,  regexp: true, indent: 4, maxerr: 50 */
 /*global define, brackets, $, window, document, Mustache, PathUtils */
 
-define(function(require, exports, module) {
+define(function (require, exports, module) {
 	"use strict";
 
 	var CommandManager		= brackets.getModule('command/CommandManager'),
@@ -31,7 +31,7 @@ define(function(require, exports, module) {
 		ExtensionUtils		= brackets.getModule('utils/ExtensionUtils'),
 		Menus				= brackets.getModule('command/Menus'),
 		ProjectManager		= brackets.getModule('project/ProjectManager'),
-		PanelManager		= brackets.getModule('view/PanelManager'),
+		WorkspaceManager	= brackets.getModule('view/WorkspaceManager'),
 		Dialogs				= brackets.getModule('widgets/Dialogs'),
 		PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
 		AppInit				= brackets.getModule('utils/AppInit'),
@@ -49,19 +49,90 @@ define(function(require, exports, module) {
 	_prefs.definePreference('copy-to-clipboard', 'boolean', false);
 	_prefs.definePreference('format', 'integer', 1);
 
-	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension;
+	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension, selectedPixel = [0, 0], currentPixel = [0, 0];
+
+	// Get image width, height and title
+	function getImageData() {
+		var imageData = {};
+		if (ProjectManager.getSelectedItem()) {
+			imageData.path = ProjectManager.getSelectedItem()._path;
+			imageData.name = ProjectManager.getSelectedItem()._name;
+			imageData.title = imageData.name;
+		}
+		if (imageData && imageData.title.length > 35) {
+			imageData.title = imageData.title.substr(0, 25) + '..' + imageData.title.substr(-4);
+		}
+		return imageData;
+	}
+
+	// Show/Hide the bottom panel.
+	function setPanelVisibility(visible) {
+		if (visible) {
+			isVisible = true;
+			if (panel) {
+				panel.hide();
+				panel.$panel.remove();
+			}
+			$panel = $(Mustache.render(panelHTML, imageData));
+			_EventController($panel);
+			panel = WorkspaceManager.createBottomPanel(_ExtensionID, $panel, 250);
+			$icon.addClass('active');
+			panel.show();
+			CommandManager.get(_ExtensionID).setChecked(true);
+		} else {
+			isVisible = false;
+			actualPath = null;
+			$icon.removeClass('active');
+			panel.hide();
+			panel.$panel.remove();
+			CommandManager.get(_ExtensionID).setChecked(false);
+		}
+	}
+	
+	// Event Controller of the bottom panel
+	function _EventController($panel) {
+		$panel.find('#color-palette-format')
+			.prop('selectedIndex', _prefs.get('format') - 1)
+			.change(function (e) {
+				_prefs.set('format', window.parseInt(e.target.value));
+				updatePreviews(currentPixel);
+				updateSelectedPreviews(selectedPixel);
+			});
+		
+		if (_prefs.get('copy-to-clipboard')) {
+			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
+		}
+		$panel.on('click', '.close', function () {
+			setPanelVisibility(false);
+		});
+		$panel.find('.panel-img')
+			.on('mousemove', function (e) {
+				currentPixel = [e.offsetX, e.offsetY];
+				updatePreviews(currentPixel);
+			})
+			.on('click', function(e) {
+				selectedPixel = [e.offsetX, e.offsetY];
+				updateSelectedPreviews(selectedPixel);
+				processSelectedColor(selectedPixel);
+			});
+		$panel.on('click', '.preview1, .preview2, .selected, .current', function(e) {
+			insertStringToEditor($(this).data('color'));
+		});
+		$panel.find('#color-palette-btn-clipboard').on('change', function(e) {
+			_prefs.set('copy-to-clipboard', e.target.checked);
+		});
+	}		
 
 	function _ExecMain() {
 		imageData = getImageData();
 
 		// Double check || Close
 		if (!/\.(jpg|jpeg|gif|png|ico)$/i.test(imageData.name)) {
-			Dialogs.showModalDialog(
-				_ExtensionID, 'Information', 'Please open an image or icon to pick colors from.'
-			);
-			if (isVisible)
+			Dialogs.showModalDialog(_ExtensionID, 'Information', 'Please open an image or icon to pick colors from.');
+			if (isVisible) {
 				setPanelVisibility(false);
-			return;
+			}
+			return false;
 		}
 
 		if (actualPath !== imageData.path) {
@@ -77,80 +148,29 @@ define(function(require, exports, module) {
 				'max-width': dimension.width + 'px',
 				'max-height': dimension.height + 'px'
 			});
-			canvas.width = dimension.width;
-			canvas.height = dimension.height;
-			context = canvas.getContext('2d');
-			context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
-		} else {
-			actualPath = null;
-			setPanelVisibility(false);
-		}
-	}
-
-	// Show/Hide the bottom panel.
-	function setPanelVisibility(visible) {
-		if (visible) {
-			isVisible = true;
-			if (panel) {
-				panel.hide();
-				panel.$panel.remove();
+			
+			$image[0].onload = function() {
+				canvas.width = dimension.width;
+				canvas.height = dimension.height;
+				context = canvas.getContext('2d');
+				context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
 			}
-			$panel = $(Mustache.render(panelHTML, imageData));
-			_EventController($panel);
-			panel = PanelManager.createBottomPanel(_ExtensionID, $panel, 250);
-			$icon.addClass('active');
-			panel.show();
-			CommandManager.get(_ExtensionID).setChecked(true);
 		} else {
-			isVisible = false;
 			actualPath = null;
-			$icon.removeClass('active');
-		panel.hide();
-			panel.$panel.remove();
-			CommandManager.get(_ExtensionID).setChecked(false);
-		}
-	}
-
-	// Event Controller of the bottom panel
-	function _EventController($panel) {
-		$panel.find('#color-palette-format')
-			.prop('selectedIndex', _prefs.get('format') - 1)
-			.change(function(e) {
-				_prefs.set('format', parseInt(e.target.value));
-			});
-
-		if (_prefs.get('copy-to-clipboard')) {
-			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
-		}
-
-		$panel.on('click', '.close', function() {
 			setPanelVisibility(false);
-		});
-		$panel.find('.panel-img')
-			.on('mousemove', function(e) {
-				updatePreviews(e);
-			})
-			.on('click', function(e) {
-				insertToEditor(e);
-			});
-		$panel.on('click', '.preview1, .preview2, .selected, .current', function(e) {
-			addToEditor($(this).data('color'));
-		});
-		$panel.find('#color-palette-btn-clipboard').on('change', function(e) {
-			_prefs.set('copy-to-clipboard', e.target.checked);
-		});
+		}
 	}
 
-	// Updates both previews
-	function updatePreviews(e) {
-		var colors = getGridColors([e.offsetX, e.offsetY]);
+	// Updates the preview for current color
+	function updatePreviews(pixel) {
+		var colors = getGridColors(pixel);
 
 		$panel.find('i.pixel').each(function(i, elem) {
 			$(elem).css('background-color', colors[i]);
 		});
 
 		// Update Small Preview
-		var color = getPixelColor([e.offsetX, e.offsetY]),
+		var color = getPixelColor(pixel),
 			formattedColor = getFormattedColor(color);
 
 		$panel.find('.preview1').css({
@@ -163,9 +183,9 @@ define(function(require, exports, module) {
 		});
 	}
 
-	// Inserts selected color to the editor
-	function insertToEditor(e) {
-		var color = getPixelColor([e.offsetX, e.offsetY]),
+	// Updates the preview for selected color
+	function updateSelectedPreviews(pixel) {
+		var color = getPixelColor(pixel),
 			formattedColor = getFormattedColor(color);
 
 		$panel.find('.preview2').css({
@@ -176,29 +196,39 @@ define(function(require, exports, module) {
 		$panel.find('.selected').html(formattedColor).data({
 			'color': formattedColor
 		});
+	}
+	
+	// Add color to editor or clipboard
+	function processSelectedColor(pixel) {
+		var color = getFormattedColor(getPixelColor(pixel));
 		if (_prefs.get('copy-to-clipboard')) {
-			copyToClipboard(formattedColor);
+			copyToClipboard(color);
 			return;
 		}
-		addToEditor(formattedColor);
+		insertStringToEditor(color);
 	}
 
 	// Add a string to the editor
-	function addToEditor(string) {
-		var editor = EditorManager.getActiveEditor();
-		editor.focus();
+	function insertStringToEditor(string) {
+		var editor = EditorManager.getFocusedEditor() || EditorManager.getActiveEditor();
+		if (!editor) {
+			return false;
+		}
+		
+		if (!editor.hasFocus()) {
+			editor.focus();
+		}
 
-		var doc = editor.document;
 		if (editor.getSelectedText().length > 0) {
 			var selection = editor.getSelection();
 			if (editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && _prefs.get('format') === 1) {
-				doc.replaceRange(string.substr(1), selection.start, selection.end);
+				editor.document.replaceRange(string.substr(1), selection.start, selection.end);
 			} else {
-				doc.replaceRange(string, selection.start, selection.end);
+				editor.document.replaceRange(string, selection.start, selection.end);
 			}
 		} else {
 			var pos = editor.getCursorPos();
-			doc.replaceRange(string, {
+			editor.document.replaceRange(string, {
 				line: pos.line,
 				ch: pos.ch
 			});
@@ -238,13 +268,9 @@ define(function(require, exports, module) {
 	// Return a formatted color string
 	function getFormattedColor(color) {
 		var cl = tinycolor(color);
-
 		switch (_prefs.get('format')) {
 			case 1:
-				if (color.a < 1)
-					return cl.toRgbString();
-
-				return cl.toHexString();
+				return (color.a < 1) ? cl.toRgbString() : cl.toHexString();
 			case 2:
 				return cl.toHslString();
 			case 3:
@@ -256,32 +282,12 @@ define(function(require, exports, module) {
 
 	// Work around, to get the image dimensions :(
 	function getImageDimensions() {
-		var $imageData = $('#img-data').html() || $('.image-data').html(),
-			parts = $imageData.split(' ');
+		var imageData = $('.active-pane .image-data').html() || $('.image-data').html(),
+			segments = imageData.split(' ');
 		return {
-			width: parts[0],
-			height: parts[2]
+			width: segments[0],
+			height: segments[2]
 		};
-	}
-
-	function getImageData() {
-		var imageData = {};
-
-		if (ProjectManager.getSelectedItem()) {
-			imageData = {
-				path: ProjectManager.getSelectedItem()._path,
-				name: ProjectManager.getSelectedItem()._name
-			};
-		} else {
-			imageData.path = $('#img-path').text();
-			imageData.name = imageData.path.split('/').pop();
-		}
-
-		imageData.title = imageData.name;
-		if (imageData.name.length > 35) {
-			imageData.title = imageData.name.substr(0, 25) + '...' + imageData.name.substr(-3);
-		}
-		return imageData;
 	}
 
 	// Copy text to clipboard
@@ -303,19 +309,17 @@ define(function(require, exports, module) {
 	// Add to View Menu
 	AppInit.appReady(function() {
 		ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
-		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
 		CommandManager.register(_ExtensionLabel, _ExtensionID, _ExecMain);
+		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
 		menu.addMenuItem(_ExtensionID, _ExtensionShortcut);
 	});
 
 	// Resize
-	$(PanelManager).on('editorAreaResize', function() {
+	$(WorkspaceManager).on('workspaceUpdateLayout', function() {
 		if (isVisible && $panel) {
-			var height = panel.$panel.innerHeight() - 48,
-				width = panel.$panel.innerWidth() - 175;
 			$panel.find('.span10').css({
-				'height': height + 'px',
-				'width': width + 'px'
+				'height': (panel.$panel.innerHeight() - 48) + 'px',
+				'width': (panel.$panel.innerWidth() - 175) + 'px'
 			});
 		}
 	});
