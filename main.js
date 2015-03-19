@@ -154,7 +154,7 @@ define(function (require, exports, module) {
 				canvas.height = dimension.height;
 				context = canvas.getContext('2d');
 				context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
-			}
+			};
 		} else {
 			actualPath = null;
 			setPanelVisibility(false);
@@ -315,7 +315,7 @@ define(function (require, exports, module) {
 	});
 
 	// Resize
-	$(WorkspaceManager).on('workspaceUpdateLayout', function() {
+	WorkspaceManager.on('workspaceUpdateLayout', function() {
 		if (isVisible && $panel) {
 			$panel.find('.span10').css({
 				'height': (panel.$panel.innerHeight() - 48) + 'px',
@@ -325,7 +325,7 @@ define(function (require, exports, module) {
 	});
 
 	// Add command to project menu.
-	$(projectMenu).on("beforeContextMenuOpen", function() {
+	projectMenu.on("beforeContextMenuOpen", function() {
 		var selectedItem = ProjectManager.getSelectedItem();
 		projectMenu.removeMenuItem(_ExtensionID);
 
