@@ -50,6 +50,8 @@ define(function (require, exports, module) {
 	_prefs.definePreference('format', 'integer', 1);
 
 	var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension, selectedPixel = [0, 0], currentPixel = [0, 0];
+    
+    var fileTypeRegex = /\.(jpg|jpeg|gif|png|ico|webp)$/i;
 
 	// Get image width, height and title
 	function getImageData() {
@@ -127,7 +129,7 @@ define(function (require, exports, module) {
 		imageData = getImageData();
 
 		// Double check || Close
-		if (!/\.(jpg|jpeg|gif|png|ico)$/i.test(imageData.name)) {
+		if (!fileTypeRegex.test(imageData.name)) {
 			Dialogs.showModalDialog(_ExtensionID, 'Information', 'Please open an image or icon to pick colors from.');
 			if (isVisible) {
 				setPanelVisibility(false);
@@ -329,7 +331,7 @@ define(function (require, exports, module) {
 		var selectedItem = ProjectManager.getSelectedItem();
 		projectMenu.removeMenuItem(_ExtensionID);
 
-		if (selectedItem.isFile && /\.(jpg|jpeg|gif|png|ico)$/i.test(selectedItem.name)) {
+		if (selectedItem.isFile && fileTypeRegex.test(selectedItem.name)) {
 			projectMenu.addMenuItem(_ExtensionID, _ExtensionShortcut);
 		}
 	});
