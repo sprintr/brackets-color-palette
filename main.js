@@ -26,24 +26,24 @@
 define(function (require, exports, module) {
 	"use strict";
 
-	var CommandManager = brackets.getModule('command/CommandManager'),
-		EditorManager = brackets.getModule('editor/EditorManager'),
-		ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
-		Menus = brackets.getModule('command/Menus'),
-		ProjectManager = brackets.getModule('project/ProjectManager'),
-		WorkspaceManager = brackets.getModule('view/WorkspaceManager'),
-		Dialogs = brackets.getModule('widgets/Dialogs'),
-		PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
-		AppInit = brackets.getModule('utils/AppInit'),
-		Mustache = brackets.getModule("thirdparty/mustache/mustache"),
-		tinycolor = require('./lib/tinycolor-min'),
-		panelHTML = require('text!html/panel.html'),
-		projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
+	var AppInit				= brackets.getModule('utils/AppInit'),
+		CommandManager 		= brackets.getModule('command/CommandManager'),
+		Dialogs 			= brackets.getModule('widgets/Dialogs'),
+		EditorManager 		= brackets.getModule('editor/EditorManager'),
+		ExtensionUtils 		= brackets.getModule('utils/ExtensionUtils'),
+		Menus 				= brackets.getModule('command/Menus'),
+		Mustache			= brackets.getModule("thirdparty/mustache/mustache"),
+		PreferencesManager	= brackets.getModule('preferences/PreferencesManager'),
+		ProjectManager		= brackets.getModule('project/ProjectManager'),
+		WorkspaceManager	= brackets.getModule('view/WorkspaceManager'),
+		tinycolor			= require('./lib/tinycolor-min'),
+		panelHTML			= require('text!html/panel.html'),
+		projectMenu			= Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
-	var $panel,
+	var filePath,
+		$panel,
 		$icon,
 		panel,
-		filePath,
 		isPanelVisible,
 		context,
 		selectedPixel = [0, 0],
@@ -73,7 +73,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Returns the path, name and title of the image
-	 * 
+	 *
 	 * @param {String} filePath
 	 */
 	function getImageInfo(filePath) {
@@ -92,7 +92,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Toggles the visibility of the panel
-	 * 
+	 *
 	 * @param {boolean} visibility
 	 * @param {Object} imageInfo
 	 */
@@ -120,7 +120,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Opens the image in the panel
-	 * 
+	 *
 	 * @param {Object} imageInfo
 	 */
 	function openImage(imageInfo) {
@@ -180,7 +180,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Updates the cursor positions on the image
-	 * 
+	 *
 	 * @param {Array<number>} pixel
 	 */
 	function updateMousePosition(pixel) {
@@ -189,7 +189,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Update the pixel grid (Zoom view)
-	 * 
+	 *
 	 * @param {Array<number>} pixel
 	 */
 	function updateCurrentPreviews(pixel) {
@@ -214,7 +214,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Updates the preview for selected color
-	 * 
+	 *
 	 * @param {Array<number>} pixel
 	 */
 	function updateSelectedPreviews(pixel) {
@@ -233,7 +233,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Inserts text in the active editor
-	 * 
+	 *
 	 * @param {String} text
 	 */
 	function insertTextIntoEditor(text) {
@@ -265,7 +265,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Copies text to clipboard
-	 * 
+	 *
 	 * @param {String} text
 	 */
 	function copyToClipboard(text) {
@@ -278,7 +278,7 @@ define(function (require, exports, module) {
 
 	/**
 	 * Add color to editor or clipboard
-	 * 
+	 *
 	 * @param {Array<number>} pixel
 	 */
 	function processSelectedColor(pixel) {
@@ -307,12 +307,11 @@ define(function (require, exports, module) {
 				updateSelectedPreviews(selectedPixel);
 			});
 
-		if (preferences.get('copyToClipboard')) {
-			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
-		}
-		$panel.find('#color-palette-btn-clipboard').on('change', function (e) {
-			preferences.set('copyToClipboard', e.target.checked);
-		});
+		$panel.find('#color-palette-btn-clipboard')
+			.attr('checked', preferences.get('copyToClipboard'))
+			.on('change', function (e) {
+				preferences.set('copyToClipboard', e.target.checked);
+			});
 
 		// Updates the preview on mousemove and inserts the color on click
 		$panel.find('.panel-img')
@@ -328,14 +327,14 @@ define(function (require, exports, module) {
 			});
 
 		// Inserts the color into the editor when one of the preview buttons in clicked
-		$panel.on('click', '.preview-current, .preview-selected, .code-view-selected, .code-view-current', function (e) {
+		$panel.on('click', '.preview-current, .preview-selected, .code-view-current, .code-view-selected', function (e) {
 			insertTextIntoEditor($(this).data('color'));
 		});
 	}
 
 	/**
 	 * Return RGBA of a pixel in the current context
-	 * 
+	 *
 	 * @param {Array<number>} pixel
 	 */
 	function getPixelColor(pixel) {
