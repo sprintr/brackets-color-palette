@@ -23,336 +23,375 @@
 /*jslint vars: true, plusplus: true, eqeq: true, devel: true, nomen: true,  regexp: true, indent: 4, maxerr: 50 */
 /*global define, brackets, $, window, document, Mustache, PathUtils */
 
-define(function(require, exports, module) {
-    "use strict";
+define(function (require, exports, module) {
+	"use strict";
 
-    var CommandManager = brackets.getModule('command/CommandManager'),
-        EditorManager = brackets.getModule('editor/EditorManager'),
-        ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
-        Menus = brackets.getModule('command/Menus'),
-        ProjectManager = brackets.getModule('project/ProjectManager'),
-        WorkspaceManager = brackets.getModule('view/WorkspaceManager'),
-        Dialogs = brackets.getModule('widgets/Dialogs'),
-        PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
-        AppInit = brackets.getModule('utils/AppInit'),
-        tinycolor = require('./lib/tinycolor-min'),
-        panelHTML = require('text!html/panel.html');
+	var CommandManager = brackets.getModule('command/CommandManager'),
+		EditorManager = brackets.getModule('editor/EditorManager'),
+		ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
+		Menus = brackets.getModule('command/Menus'),
+		ProjectManager = brackets.getModule('project/ProjectManager'),
+		WorkspaceManager = brackets.getModule('view/WorkspaceManager'),
+		Dialogs = brackets.getModule('widgets/Dialogs'),
+		PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
+		AppInit = brackets.getModule('utils/AppInit'),
+		Mustache = brackets.getModule("thirdparty/mustache/mustache"),
+		tinycolor = require('./lib/tinycolor-min'),
+		panelHTML = require('text!html/panel.html'),
+		projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
-    // Extension config
-    var EXTENSION_ID = "io.brackets.color-palette",
-        EXTENSION_LABEL = "Color Palette",
-        EXTENSION_SHORTCUT = "Alt-F6";
+	// Extension config
+	var EXTENSION_ID = "sprintr.brackets-color-palette",
+		EXTENSION_LABEL = "Color Palette",
+		EXTENSION_SHORTCUT = "Alt-F6";
 
-    // Color formats
-    var COLOR_HEX = 1,
-        COLOR_HSL = 2,
-        COLOR_RGB = 3;
+	// Color formats
+	var COLOR_RRGGBB = 1,
+		COLOR_RRGGBBAA = 2,
+		COLOR_HSL = 3,
+		COLOR_RGB = 4;
 
-    var projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
+	var preferences = PreferencesManager.getExtensionPrefs(EXTENSION_ID);
+	preferences.definePreference('copyToClipboard', 'boolean', false, {
+		description: "true to copy the color to clipboard"
+	});
+	preferences.definePreference('format', 'number', COLOR_RRGGBB, {
+		description: "Format of the selected color"
+	});
 
-    var preferences = PreferencesManager.getExtensionPrefs(EXTENSION_ID);
-    preferences.definePreference('copy-to-clipboard', 'boolean', false);
-    preferences.definePreference('format', 'integer', 1);
+	var $panel, $image, $icon, panel, filePath, isPanelVisible, canvas, context, imageInfo, dimension, selectedPixel = [0, 0], currentPixel = [0, 0];
 
-    var $panel, $image, $icon, panel, actualPath, isVisible, canvas, context, imageData, dimension, selectedPixel = [0, 0], currentPixel = [0, 0];
-
-    var fileTypeRegex = /\.(jpg|jpeg|gif|png|ico|webp)$/i;
+	var fileTypeRegex = /\.(jpg|jpeg|gif|png|ico|webp)$/i;
 
 	/**
 	 * Returns the path, name and and the title for the image
 	 */
-    function getImageInfo() {
-        if (ProjectManager.getSelectedItem()) {
-            // imageData.path = ProjectManager.getSelectedItem()._path;
-            // imageData.name = ProjectManager.getSelectedItem()._name;
-            // imageData.title = imageData.name;
+	function getImageInfo() {
+		var selectedItem = ProjectManager.getSelectedItem();
 
-            var imageInfo = {
-                path: ProjectManager.getSelectedItem()._path,
-                name: ProjectManager.getSelectedItem()._name,
-                title: ProjectManager.getSelectedItem()._name
-            };
+		if (selectedItem) {
+			var imageInfo = {
+				path: selectedItem._path,
+				name: selectedItem._name,
+				title: selectedItem._name
+			};
 
-            if (imageInfo.title.length > 35) {
-                imageInfo.title = imageInfo.title.substr(0, 25) + '..' + imageInfo.title.substr(-4);
-            }
+			if (imageInfo.title.length > 35) {
+				imageInfo.title = imageInfo.title.substr(0, 25) + '..' + imageInfo.title.substr(-4);
+			}
 
-            return imageInfo;
-        }
+			return imageInfo;
+		}
 
-        return null;
-        // if (imageData && imageData.title.length > 35) {
-        //     imageData.title = imageData.title.substr(0, 25) + '..' + imageData.title.substr(-4);
-        // }
-        // return imageData;
-    }
+		return null;
+	}
 
-    // Show/Hide the bottom panel.
-    function setPanelVisibility(visible) {
-        if (visible) {
-            isVisible = true;
-            if (panel) {
-                panel.hide();
-                panel.$panel.remove();
-            }
-            $panel = $(Mustache.render(panelHTML, imageData));
-            _EventController($panel);
-            panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 250);
-            $icon.addClass('active');
-            panel.show();
-            CommandManager.get(EXTENSION_ID).setChecked(true);
-        } else {
-            isVisible = false;
-            actualPath = null;
-            $icon.removeClass('active');
-            panel.hide();
-            panel.$panel.remove();
-            CommandManager.get(EXTENSION_ID).setChecked(false);
-        }
-    }
+	// Show/Hide the bottom panel.
+	function setPanelVisibility(visibility) {
+		if (visibility) {
+			isPanelVisible = true;
+			if (panel) {
+				panel.hide();
+				panel.$panel.remove();
+			}
+			$panel = $(Mustache.render(panelHTML, imageInfo));
+			addEventListeners($panel);
+			panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 250);
+			$icon.addClass('active');
+			panel.show();
+			CommandManager.get(EXTENSION_ID).setChecked(true);
+		} else {
+			isPanelVisible = false;
+			filePath = null;
+			$icon.removeClass('active');
+			panel.hide();
+			panel.$panel.remove();
+			CommandManager.get(EXTENSION_ID).setChecked(false);
+		}
+	}
 
-    // Event Controller of the bottom panel
-    function _EventController($panel) {
-        $panel.find('#color-palette-format')
-            .prop('selectedIndex', preferences.get('format') - 1)
-            .change(function(e) {
-                preferences.set('format', window.parseInt(e.target.value));
-                updatePreviews(currentPixel);
-                updateSelectedPreviews(selectedPixel);
-            });
+	function main() {
+		imageInfo = getImageInfo();
 
-        if (preferences.get('copy-to-clipboard')) {
-            $panel.find('#color-palette-btn-clipboard').attr('checked', true);
-        }
-        $panel.on('click', '.close', function() {
-            setPanelVisibility(false);
-        });
-        $panel.find('.panel-img')
-            .on('mousemove', function(e) {
-                currentPixel = [e.offsetX, e.offsetY];
-                updatePreviews(currentPixel);
-            })
-            .on('click', function(e) {
-                selectedPixel = [e.offsetX, e.offsetY];
-                updateSelectedPreviews(selectedPixel);
-                processSelectedColor(selectedPixel);
-            });
-        $panel.on('click', '.preview1, .preview2, .selected, .current', function(e) {
-            insertStringToEditor($(this).data('color'));
-        });
-        $panel.find('#color-palette-btn-clipboard').on('change', function(e) {
-            preferences.set('copy-to-clipboard', e.target.checked);
-        });
-    }
+		// Check file via its extension
+		if (!fileTypeRegex.test(imageInfo.name)) {
+			Dialogs.showModalDialog(EXTENSION_ID, 'Information', 'Please open an image or icon to pick colors from.');
+			if (isPanelVisible) {
+				setPanelVisibility(false);
+			}
 
-    function _ExecMain() {
-        imageData = getImageInfo();
+			return false;
+		}
 
-        // Double check || Close
-        if (!fileTypeRegex.test(imageData.name)) {
-            Dialogs.showModalDialog(EXTENSION_ID, 'Information', 'Please open an image or icon to pick colors from.');
-            if (isVisible) {
-                setPanelVisibility(false);
-            }
-            return false;
-        }
+		if (filePath !== imageInfo.path) {
+			setPanelVisibility(true);
 
-        if (actualPath !== imageData.path) {
-            actualPath = imageData.path;
-            setPanelVisibility(true);
-            dimension = getImageDimensions();
-            $image = $panel.find('.panel-img');
-            canvas = $panel.find('.img-canvas')[0];
+			filePath = imageInfo.path;
+			dimension = getImageDimensions();
+			$image = $panel.find('.panel-img');
+			canvas = $panel.find('.img-canvas')[0];
 
-            $image.css({
-                'width': dimension.width + 'px',
-                'height': dimension.height + 'px',
-                'max-width': dimension.width + 'px',
-                'max-height': dimension.height + 'px'
-            });
+			$image.css({
+				'width': dimension.width + 'px',
+				'height': dimension.height + 'px',
+				'max-width': dimension.width + 'px',
+				'max-height': dimension.height + 'px'
+			});
 
-            $image[0].onload = function() {
-                canvas.width = dimension.width;
-                canvas.height = dimension.height;
-                context = canvas.getContext('2d');
-                context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
-            };
-        } else {
-            actualPath = null;
-            setPanelVisibility(false);
-        }
-    }
+			$image[0].onload = function () {
+				canvas.width = dimension.width;
+				canvas.height = dimension.height;
+				context = canvas.getContext('2d');
+				context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
+			};
+		} else {
+			filePath = null;
+			setPanelVisibility(false);
+		}
+	}
 
-    // Updates the preview for current color
-    function updatePreviews(pixel) {
-        var colors = getGridColors(pixel);
+	/**
+	 * Update the pixel grid (Zoom view)
+	 * 
+	 * @param {Array<number>} pixel
+	 */
+	function updateCurrentPreviews(pixel) {
+		var colors = getColorsForGrid(pixel),
+			color = getPixelColor(pixel),
+			formattedColor = formatColor(color);
 
-        $panel.find('i.pixel').each(function(i, elem) {
-            $(elem).css('background-color', colors[i]);
-        });
+		$panel.find('i.pixel').each(function (i, elem) {
+			$(elem).css('background-color', colors[i]);
+		});
 
-        // Update Small Preview
-        var color = getPixelColor(pixel),
-            formattedColor = getFormattedColor(color);
+		// Update Small Preview
+		$panel.find('.preview-current').css({
+			'background-color': tinycolor(color).toRgbString()
+		}).data({
+			'color': formattedColor
+		});
+		$panel.find('.code-view-current').html(formattedColor).data({
+			'color': formattedColor
+		});
+	}
 
-        $panel.find('.preview1').css({
-            'background-color': tinycolor(color).toRgbString()
-        }).data({
-            'color': formattedColor
-        });
-        $panel.find('.current').html(formattedColor).data({
-            'color': formattedColor
-        });
-    }
+	/**
+	 * Updates the preview for selected color
+	 * 
+	 * @param {Array<number>} pixel
+	 */
+	function updateSelectedPreviews(pixel) {
+		var color = getPixelColor(pixel),
+			formattedColor = formatColor(color);
 
-    // Updates the preview for selected color
-    function updateSelectedPreviews(pixel) {
-        var color = getPixelColor(pixel),
-            formattedColor = getFormattedColor(color);
+		$panel.find('.preview-selected').css({
+			'background-color': tinycolor(color).toRgbString()
+		}).data({
+			'color': formattedColor
+		});
+		$panel.find('.code-view-selected').html(formattedColor).data({
+			'color': formattedColor
+		});
+	}
 
-        $panel.find('.preview2').css({
-            'background-color': tinycolor(color).toRgbString()
-        }).data({
-            'color': formattedColor
-        });
-        $panel.find('.selected').html(formattedColor).data({
-            'color': formattedColor
-        });
-    }
+	/**
+	 * Inserts text in the active editor
+	 * 
+	 * @param {String} text
+	 */
+	function insertTextIntoEditor(text) {
+		var editor = EditorManager.getFocusedEditor() || EditorManager.getActiveEditor();
+		if (!editor) {
+			return null;
+		}
 
-    // Add color to editor or clipboard
-    function processSelectedColor(pixel) {
-        var color = getFormattedColor(getPixelColor(pixel));
-        if (preferences.get('copy-to-clipboard')) {
-            copyToClipboard(color);
-            return;
-        }
-        insertStringToEditor(color);
-    }
+		if (!editor.hasFocus()) {
+			editor.focus();
+		}
 
-    // Add a string to the editor
-    function insertStringToEditor(string) {
-        var editor = EditorManager.getFocusedEditor() || EditorManager.getActiveEditor();
-        if (!editor) {
-            return false;
-        }
+		var selectedText = editor.getSelectedText();
+		if (selectedText.length > 0) {
+			var selection = editor.getSelection();
+			if (selectedText.substr(0, 1) !== '#' && text.substr(0, 1) === '#' && preferences.get('format') === COLOR_RRGGBB) {
+				editor.document.replaceRange(text.substr(1), selection.start, selection.end);
+			} else {
+				editor.document.replaceRange(text, selection.start, selection.end);
+			}
+		} else {
+			var pos = editor.getCursorPos();
+			editor.document.replaceRange(text, {
+				line: pos.line,
+				ch: pos.ch
+			});
+		}
+	}
 
-        if (!editor.hasFocus()) {
-            editor.focus();
-        }
+	/**
+	 * Copies text to clipboard
+	 * 
+	 * @param {String} text
+	 */
+	function copyToClipboard(text) {
+		var $textarea = $('<textarea/>').text(text);
+		$('body').append($textarea);
+		$textarea.select();
+		document.execCommand('copy');
+		$textarea.remove();
+	}
 
-        if (editor.getSelectedText().length > 0) {
-            var selection = editor.getSelection();
-            if (editor.getSelectedText().substr(0, 1) !== '#' && string.substr(0, 1) === '#' && preferences.get('format') === 1) {
-                editor.document.replaceRange(string.substr(1), selection.start, selection.end);
-            } else {
-                editor.document.replaceRange(string, selection.start, selection.end);
-            }
-        } else {
-            var pos = editor.getCursorPos();
-            editor.document.replaceRange(string, {
-                line: pos.line,
-                ch: pos.ch
-            });
-        }
-    }
+	/**
+	 * Add color to editor or clipboard
+	 * 
+	 * @param {Array<number>} pixel
+	 */
+	function processSelectedColor(pixel) {
+		var color = formatColor(getPixelColor(pixel));
+		if (preferences.get('copyToClipboard')) {
+			copyToClipboard(color);
+			return;
+		}
+		insertTextIntoEditor(color);
+	}
 
-    // Return RGBA of a pixel in the current context
-    function getPixelColor(pixel) {
-        var imageData = context.getImageData(pixel[0], pixel[1], 1, 1).data;
-        return {
-            r: imageData[0],
-            g: imageData[1],
-            b: imageData[2],
-            a: imageData[3] / 255
-        };
-    }
+	/**
+	 * Adds event listeners to the DOM elements in the $panel
+	 */
+	function addEventListeners($panel) {
+		$panel.on('click', '.close', function () {
+			setPanelVisibility(false);
+		});
 
-    // Get colors across the grid
-    function getGridColors(pixel) {
-        var x = pixel[0] - 7,
-            y = pixel[1] - 7,
-            colors = [];
+		// Listen to the color format changes
+		$panel.find('#color-palette-format')
+			.prop('selectedIndex', preferences.get('format') - 1)
+			.change(function (e) {
+				preferences.set('format', window.parseInt(e.target.value));
+				updateCurrentPreviews(currentPixel);
+				updateSelectedPreviews(selectedPixel);
+			});
 
-        for (var i = 0; i < 225; i++) {
-            if (i % 15 === 0 && i !== 0) {
-                y++;
-                x -= 14;
-                colors.push(tinycolor(getPixelColor([x - 1, y])).toRgbString());
-                continue;
-            }
-            colors.push(tinycolor(getPixelColor([x, y])).toRgbString());
-            x++;
-        }
-        return colors;
-    }
+		if (preferences.get('copyToClipboard')) {
+			$panel.find('#color-palette-btn-clipboard').attr('checked', true);
+		}
+		$panel.find('#color-palette-btn-clipboard').on('change', function (e) {
+			preferences.set('copyToClipboard', e.target.checked);
+		});
 
-    // Return a formatted color string
-    function getFormattedColor(color) {
-        var cl = tinycolor(color);
-        switch (preferences.get('format')) {
-            case COLOR_HEX:
-                return (color.a < 1) ? cl.toRgbString() : cl.toHexString();
-            case COLOR_HSL:
-                return cl.toHslString();
-            case COLOR_RGB:
-                return cl.toRgbString();
-            default:
-                return cl.toHexString();
-        }
-    }
+		// Updates the preview on mousemove and inserts the color on click
+		$panel.find('.panel-img')
+			.on('mousemove', function (e) {
+				currentPixel = [e.offsetX, e.offsetY];
+				updateCurrentPreviews(currentPixel);
+			})
+			.on('click', function (e) {
+				selectedPixel = [e.offsetX, e.offsetY];
+				updateSelectedPreviews(selectedPixel);
+				processSelectedColor(selectedPixel);
+			});
 
-    // Work around, to get the image dimensions :(
-    function getImageDimensions() {
-        var imageData = $('.active-pane .image-data:visible').html() || $('.image-data:visible').html(),
-            segments = imageData.split(' ');
-        return {
-            width: segments[0],
-            height: segments[2]
-        };
-    }
+		// Inserts the color into the editor when one of the preview buttons in clicked
+		$panel.on('click', '.preview-current, .preview-selected, .code-view-selected, .code-view-current', function (e) {
+			insertTextIntoEditor($(this).data('color'));
+		});
+	}
 
-    // Copy text to clipboard
-    function copyToClipboard(text) {
-        var $textarea = $('<textarea/>').text(text);
-        $('body').append($textarea);
-        $textarea.select();
-        document.execCommand('copy');
-        $textarea.remove();
-    }
+	/**
+	 * Return RGBA of a pixel in the current context
+	 * 
+	 * @param {Array<number>} pixel
+	 */
+	function getPixelColor(pixel) {
+		var imageData = context.getImageData(pixel[0], pixel[1], 1, 1).data;
+		return {
+			r: imageData[0],
+			g: imageData[1],
+			b: imageData[2],
+			a: imageData[3] / 255
+		};
+	}
 
-    // add to toolbar
-    $icon = $('<a>').attr({
-        id: 'color-palette-icon',
-        href: '#',
-        title: EXTENSION_LABEL,
-    }).click(_ExecMain).appendTo($('#main-toolbar .buttons'));
+	// Get colors across the grid
+	function getColorsForGrid(pixel) {
+		var x = pixel[0] - 7,
+			y = pixel[1] - 7,
+			colors = [];
 
-    // Add to View Menu
-    AppInit.appReady(function() {
-        ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
-        CommandManager.register(EXTENSION_LABEL, EXTENSION_ID, _ExecMain);
-        var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
-        menu.addMenuItem(EXTENSION_ID, EXTENSION_SHORTCUT);
-    });
+		for (var i = 0; i < 225; i++) {
+			if (i % 15 === 0 && i !== 0) {
+				y++;
+				x -= 14;
+				colors.push(tinycolor(getPixelColor([x - 1, y])).toRgbString());
+				continue;
+			}
+			colors.push(tinycolor(getPixelColor([x, y])).toRgbString());
+			x++;
+		}
 
-    // Resize
-    WorkspaceManager.on('workspaceUpdateLayout', function() {
-        if (isVisible && $panel) {
-            $panel.find('.span10').css({
-                'height': (panel.$panel.innerHeight() - 48) + 'px',
-                'width': (panel.$panel.innerWidth() - 175) + 'px'
-            });
-        }
-    });
+		return colors;
+	}
 
-    // Add command to project menu.
-    projectMenu.on("beforeContextMenuOpen", function() {
-        var selectedItem = ProjectManager.getSelectedItem();
-        projectMenu.removeMenuItem(EXTENSION_ID);
+	/**
+	 * Return a formatted color string
+	 *
+	 * @param {Array<String>} color
+	 */
+	function formatColor(color) {
+		var cl = tinycolor(color);
 
-        if (selectedItem.isFile && fileTypeRegex.test(selectedItem.name)) {
-            projectMenu.addMenuItem(EXTENSION_ID, EXTENSION_SHORTCUT);
-        }
-    });
+		switch (preferences.get('format')) {
+			case COLOR_RRGGBB:
+				return (color.a < 1) ? cl.toRgbString() : cl.toHexString();
+			case COLOR_HSL:
+				return cl.toHslString();
+			case COLOR_RGB:
+				return cl.toRgbString();
+			default:
+				return cl.toHexString();
+		}
+	}
+
+	// Work around, to get the image dimensions :(
+	function getImageDimensions() {
+		var imageData = $('.active-pane .image-data:visible').html() || $('.image-data:visible').html(),
+			segments = imageData.split(' ');
+		return {
+			width: segments[0],
+			height: segments[2]
+		};
+	}
+
+	// add to toolbar
+	$icon = $('<a>').attr({
+		id: 'color-palette-icon',
+		href: '#',
+		title: EXTENSION_LABEL,
+	}).click(main).appendTo($('#main-toolbar .buttons'));
+
+	// Add to View Menu
+	AppInit.appReady(function () {
+		ExtensionUtils.loadStyleSheet(module, 'styles/styles.css');
+		CommandManager.register(EXTENSION_LABEL, EXTENSION_ID, main);
+		var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
+		menu.addMenuItem(EXTENSION_ID, EXTENSION_SHORTCUT);
+	});
+
+	// Resize
+	WorkspaceManager.on('workspaceUpdateLayout', function () {
+		if (isPanelVisible && $panel) {
+			$panel.find('.main-panel').css({
+				'height': (panel.$panel.innerHeight() - 48) + 'px',
+				'width': (panel.$panel.innerWidth() - 175) + 'px'
+			});
+		}
+	});
+
+	// Add command to project menu.
+	projectMenu.on("beforeContextMenuOpen", function () {
+		var selectedItem = ProjectManager.getSelectedItem();
+		projectMenu.removeMenuItem(EXTENSION_ID);
+
+		if (selectedItem.isFile && fileTypeRegex.test(selectedItem.name)) {
+			projectMenu.addMenuItem(EXTENSION_ID, EXTENSION_SHORTCUT);
+		}
+	});
 });

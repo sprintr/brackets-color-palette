@@ -1,12 +1,13 @@
 <div id="color-palette" class="bottom-panel vert-resizable top-resizer">
 	<div class="toolbar simple-toolbar-layout">
 		<select id="color-palette-format">
-			<option value="1">Hex</option>
-			<option value="2">HSL(a)</option>
-			<option value="3">RGB(a)</option>
+			<option value="1">#RRGGBB</option>
+			<option value="2">#RRGGBBAA</option>
+			<option value="3">HSL()</option>
+			<option value="4">RGBA()</option>
 		</select>
-		<div class="current code-view btn small no-focus" title="Current Color" data-color="#000000">#000000</div>
-		<div class="selected code-view btn small no-focus" title="Selected Color" data-color="#000000">#000000</div>
+		<div class="code-view-current code-view btn small no-focus" title="Current Color" data-color="#000000">#000000</div>
+		<div class="code-view-selected code-view btn small no-focus" title="Selected Color" data-color="#000000">#000000</div>
 		<div class="options">
 			<label><input type="checkbox" id="color-palette-btn-clipboard"> Copy to Clipboard</label>
 		</div>
@@ -245,10 +246,10 @@
 					<i class="pixel"></i>
 				</div>
 				<div class="transparent holder-small">
-					<div class="preview1" title="Current Color"></div>
+					<div class="preview-current" title="Current Color"></div>
 				</div>
 				<div class="transparent holder-small">
-					<div class="preview2" title="Selected Color"></div>
+					<div class="preview-selected" title="Selected Color"></div>
 				</div>
 			</aside>
 			<aside class="span10">
