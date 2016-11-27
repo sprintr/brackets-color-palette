@@ -45,6 +45,8 @@
 	width: 135px;
 	position: relative;
 	border: 1px solid #ccc;
+	border-top: transparent;
+	border-left: transparent;
 }
 
 .dark #color-palette .holder {

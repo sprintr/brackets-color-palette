@@ -378,9 +378,9 @@ define(function (require, exports, module) {
 	// Resize
 	WorkspaceManager.on('workspaceUpdateLayout', function () {
 		if (isPanelVisible && $panel) {
-			$panel.find('.main-panel').css({
-				'height': (panel.$panel.innerHeight() - 48) + 'px',
-				'width': (panel.$panel.innerWidth() - 175) + 'px'
+			$panel.find('.span10').css({
+				'width': (panel.$panel.innerWidth() - 155) + 'px',
+				'height': (panel.$panel.innerHeight() - 52) + 'px'
 			});
 		}
 	});
