@@ -179,6 +179,15 @@ define(function (require, exports, module) {
 	}
 
 	/**
+	 * Updates the cursor positions on the image
+	 * 
+	 * @param {Array<number>} pixel
+	 */
+	function updateMousePosition(pixel) {
+		$panel.find('.mouse-position').html("Left: " + pixel[0] + "px<br>Top: " + pixel[1] + "px");
+	}
+
+	/**
 	 * Update the pixel grid (Zoom view)
 	 * 
 	 * @param {Array<number>} pixel
@@ -309,6 +318,7 @@ define(function (require, exports, module) {
 		$panel.find('.panel-img')
 			.on('mousemove', function (e) {
 				currentPixel = [e.offsetX, e.offsetY];
+				updateMousePosition(currentPixel);
 				updateCurrentPreviews(currentPixel);
 			})
 			.on('click', function (e) {

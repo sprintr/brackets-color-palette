@@ -30,6 +30,7 @@
 	float: left;
 	overflow: auto;
 	height: 300px;
+	position: relative;
 }
 
 #color-palette .transparent {
@@ -54,7 +55,7 @@
 }
 
 #color-palette .holder-small {
-	margin-top: 5px;
+	margin-top: 3px;
 	height: 30px;
 	width: 65px;
 	border: 1px solid #ccc;
