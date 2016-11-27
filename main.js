@@ -40,8 +40,20 @@ define(function (require, exports, module) {
 		panelHTML = require('text!html/panel.html'),
 		projectMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU);
 
+	var $panel,
+		$icon,
+		panel,
+		filePath,
+		isPanelVisible,
+		context,
+		selectedPixel = [0, 0],
+		currentPixel = [0, 0];
+
+	// Regex to match file names
+	var fileTypeRegex = /\.(jpg|jpeg|gif|png|ico|webp)$/i;
+
 	// Extension config
-	var EXTENSION_ID = "sprintr.brackets-color-palette",
+	var EXTENSION_ID = "sprintr.color-palette",
 		EXTENSION_LABEL = "Color Palette",
 		EXTENSION_SHORTCUT = "Alt-F6";
 
@@ -59,35 +71,32 @@ define(function (require, exports, module) {
 		description: "Format of the selected color"
 	});
 
-	var $panel, $image, $icon, panel, filePath, isPanelVisible, canvas, context, imageInfo, dimension, selectedPixel = [0, 0], currentPixel = [0, 0];
-
-	var fileTypeRegex = /\.(jpg|jpeg|gif|png|ico|webp)$/i;
-
 	/**
-	 * Returns the path, name and and the title for the image
+	 * Returns the path, name and title of the image
+	 * 
+	 * @param {String} filePath
 	 */
-	function getImageInfo() {
-		var selectedItem = ProjectManager.getSelectedItem();
-
-		if (selectedItem) {
-			var imageInfo = {
-				path: selectedItem._path,
-				name: selectedItem._name,
-				title: selectedItem._name
-			};
-
-			if (imageInfo.title.length > 35) {
-				imageInfo.title = imageInfo.title.substr(0, 25) + '..' + imageInfo.title.substr(-4);
-			}
-
-			return imageInfo;
+	function getImageInfo(filePath) {
+		var name = filePath.substr(filePath.lastIndexOf("/") + 1);
+		var title = name;
+		if (title.length > 35) {
+			title = title.substr(0, 25) + '..' + title.substr(-4);
 		}
 
-		return null;
+		return {
+			path: filePath,
+			name: name,
+			title: title
+		};
 	}
 
-	// Show/Hide the bottom panel.
-	function setPanelVisibility(visibility) {
+	/**
+	 * Toggles the visibility of the panel
+	 * 
+	 * @param {boolean} visibility
+	 * @param {Object} imageInfo
+	 */
+	function setPanelVisibility(visibility, imageInfo) {
 		if (visibility) {
 			isPanelVisible = true;
 			if (panel) {
@@ -97,56 +106,75 @@ define(function (require, exports, module) {
 			$panel = $(Mustache.render(panelHTML, imageInfo));
 			addEventListeners($panel);
 			panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 250);
-			$icon.addClass('active');
 			panel.show();
+			$icon.addClass('active');
 			CommandManager.get(EXTENSION_ID).setChecked(true);
 		} else {
 			isPanelVisible = false;
-			filePath = null;
-			$icon.removeClass('active');
-			panel.hide();
 			panel.$panel.remove();
+			panel.hide();
+			$icon.removeClass('active');
 			CommandManager.get(EXTENSION_ID).setChecked(false);
 		}
 	}
 
+	/**
+	 * Opens the image in the panel
+	 * 
+	 * @param {Object} imageInfo
+	 */
+	function openImage(imageInfo) {
+		setPanelVisibility(true, imageInfo);
+
+		filePath = imageInfo.path;
+
+		var img = document.createElement("img");
+		img.src = imageInfo.path;
+		img.onload = function () {
+			var width = img.width,
+				height = img.height;
+
+			var $image = $panel.find('.panel-img');
+			$image.attr('src', imageInfo.path);
+			$image.css({
+				'width': width + 'px',
+				'height': height + 'px',
+				'max-width': width + 'px',
+				'max-height': height + 'px'
+			});
+
+			var canvas = $panel.find('.img-canvas')[0];
+			canvas.width = width;
+			canvas.height = height;
+			context = canvas.getContext("2d");
+			context.drawImage($image[0], 0, 0, width, height);
+		};
+	}
+
+	/**
+	 * Closes the image
+	 */
+	function closeImage() {
+		if (isPanelVisible) {
+			setPanelVisibility(false);
+		}
+		filePath = null;
+	}
+
 	function main() {
-		imageInfo = getImageInfo();
+		var selectedItem = ProjectManager.getSelectedItem(),
+			imageInfo = getImageInfo(selectedItem._path);
 
 		// Check file via its extension
 		if (!fileTypeRegex.test(imageInfo.name)) {
 			Dialogs.showModalDialog(EXTENSION_ID, 'Information', 'Please open an image or icon to pick colors from.');
-			if (isPanelVisible) {
-				setPanelVisibility(false);
-			}
-
-			return false;
+			return closeImage();
 		}
 
 		if (filePath !== imageInfo.path) {
-			setPanelVisibility(true);
-
-			filePath = imageInfo.path;
-			dimension = getImageDimensions();
-			$image = $panel.find('.panel-img');
-			canvas = $panel.find('.img-canvas')[0];
-
-			$image.css({
-				'width': dimension.width + 'px',
-				'height': dimension.height + 'px',
-				'max-width': dimension.width + 'px',
-				'max-height': dimension.height + 'px'
-			});
-
-			$image[0].onload = function () {
-				canvas.width = dimension.width;
-				canvas.height = dimension.height;
-				context = canvas.getContext('2d');
-				context.drawImage($image[0], 0, 0, dimension.width, dimension.height);
-			};
+			openImage(imageInfo);
 		} else {
-			filePath = null;
-			setPanelVisibility(false);
+			closeImage();
 		}
 	}
 
@@ -348,16 +376,6 @@ define(function (require, exports, module) {
 			default:
 				return cl.toHexString();
 		}
-	}
-
-	// Work around, to get the image dimensions :(
-	function getImageDimensions() {
-		var imageData = $('.active-pane .image-data:visible').html() || $('.image-data:visible').html(),
-			segments = imageData.split(' ');
-		return {
-			width: segments[0],
-			height: segments[2]
-		};
 	}
 
 	// add to toolbar
