@@ -100,8 +100,8 @@ define(function (require, exports, module) {
 		if (visibility) {
 			isPanelVisible = true;
 			if (panel) {
-				panel.hide();
 				panel.$panel.remove();
+				panel.hide();
 			}
 			$panel = $(Mustache.render(panelHTML, imageInfo));
 			addEventListeners($panel);
@@ -111,8 +111,8 @@ define(function (require, exports, module) {
 			CommandManager.get(EXTENSION_ID).setChecked(true);
 		} else {
 			isPanelVisible = false;
-			panel.$panel.remove();
 			panel.hide();
+			panel.$panel.remove();
 			$icon.removeClass('active');
 			CommandManager.get(EXTENSION_ID).setChecked(false);
 		}
