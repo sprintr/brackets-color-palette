@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="6" width="6" version="1.1" viewBox="0 0 6 6">
+	<g fill-opacity="0.66666667" fill-rule="evenodd" transform="translate(0,-1046.3622)">
+		<path style="enable-background:accumulate;color:#000000;" d="M3,0,3,3,6,3,6,0,3,0zm0,3-3,0,0,3,3,0,0-3z" transform="translate(0,1046.3622)" fill="#000"/>
+		<path style="enable-background:accumulate;color:#000000;" d="M0,0,0,3,3,3,3,0,0,0zm3,3,0,3,3,0,0-3-3,0z" transform="translate(0,1046.3622)" fill="#FFF"/>
+	</g>
+</svg>

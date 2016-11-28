@@ -47,7 +47,8 @@ define(function (require, exports, module) {
 		isPanelVisible,
 		context,
 		selectedPixel = [0, 0],
-		currentPixel = [0, 0];
+		currentPixel = [0, 0],
+		isContextMenuItemAdded = false;
 
 	// Regex to match file names
 	var fileTypeRegex = /\.(jpg|jpeg|gif|png|ico|webp)$/i;
@@ -58,12 +59,12 @@ define(function (require, exports, module) {
 		EXTENSION_SHORTCUT = "Alt-F6";
 
 	// Color formats
-	var COLOR_RRGGBB = 1,
-		COLOR_RRGGBBAA = 2,
-		COLOR_HSL = 3,
-		COLOR_RGB = 4,
-		COLOR_HSV = 5,
-		COLOR_NAME = 6;
+	var COLOR_RRGGBB 	= 1,
+		COLOR_RRGGBBAA	= 2,
+		COLOR_HSL		= 3,
+		COLOR_RGB		= 4,
+		COLOR_HSV		= 5,
+		COLOR_NAME		= 6;
 
 	var preferences = PreferencesManager.getExtensionPrefs(EXTENSION_ID);
 	preferences.definePreference('copyToClipboard', 'boolean', false, {
@@ -187,7 +188,7 @@ define(function (require, exports, module) {
 	 * @param {Array<number>} pixel
 	 */
 	function updateMousePosition(pixel) {
-		$panel.find('.mouse-position').html("Left: " + pixel[0] + "px<br>Top: " + pixel[1] + "px");
+		$panel.find('.mouse-position').html("X: " + pixel[0] + "px<br>Y: " + pixel[1] + "px");
 	}
 
 	/**
@@ -298,7 +299,7 @@ define(function (require, exports, module) {
 	 */
 	function addEventListeners($panel) {
 		$panel.on('click', '.close', function () {
-			hidePanel();
+			closeImage();
 		});
 
 		// Listen to the color format changes
@@ -424,9 +425,13 @@ define(function (require, exports, module) {
 	// Add command to project menu.
 	projectMenu.on("beforeContextMenuOpen", function () {
 		var selectedItem = ProjectManager.getSelectedItem();
-		//projectMenu.removeMenuItem(EXTENSION_ID);
+		if (isContextMenuItemAdded) {
+			isContextMenuItemAdded = false;
+			projectMenu.removeMenuItem(EXTENSION_ID);
+		}
 
 		if (selectedItem.isFile && fileTypeRegex.test(selectedItem.name)) {
+			isContextMenuItemAdded = true;
 			projectMenu.addMenuItem(EXTENSION_ID);
 		}
 	});
