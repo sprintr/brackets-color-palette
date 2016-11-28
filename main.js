@@ -61,7 +61,9 @@ define(function (require, exports, module) {
 	var COLOR_RRGGBB = 1,
 		COLOR_RRGGBBAA = 2,
 		COLOR_HSL = 3,
-		COLOR_RGB = 4;
+		COLOR_RGB = 4,
+		COLOR_HSV = 5,
+		COLOR_NAME = 6;
 
 	var preferences = PreferencesManager.getExtensionPrefs(EXTENSION_ID);
 	preferences.definePreference('copyToClipboard', 'boolean', false, {
@@ -379,10 +381,16 @@ define(function (require, exports, module) {
 		switch (preferences.get('format')) {
 			case COLOR_RRGGBB:
 				return (color.a < 1) ? cl.toRgbString() : cl.toHexString();
+			case COLOR_RRGGBBAA:
+				return cl.toHex8String();
 			case COLOR_HSL:
 				return cl.toHslString();
 			case COLOR_RGB:
 				return cl.toRgbString();
+			case COLOR_HSV:
+				return cl.toHsvString();
+			case COLOR_NAME:
+				return cl.toName() || "none";
 			default:
 				return cl.toHexString();
 		}
@@ -408,7 +416,7 @@ define(function (require, exports, module) {
 		if (isPanelVisible && $panel) {
 			$panel.find('.span10').css({
 				'width': (panel.$panel.innerWidth() - 155) + 'px',
-				'height': (panel.$panel.innerHeight() - 52) + 'px'
+				'height': (panel.$panel.innerHeight() - 53) + 'px'
 			});
 		}
 	});
