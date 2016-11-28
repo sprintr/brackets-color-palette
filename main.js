@@ -91,31 +91,32 @@ define(function (require, exports, module) {
 	}
 
 	/**
-	 * Toggles the visibility of the panel
+	 * Shows the panel
 	 *
-	 * @param {boolean} visibility
 	 * @param {Object} imageInfo
 	 */
-	function setPanelVisibility(visibility, imageInfo) {
-		if (visibility) {
-			isPanelVisible = true;
-			if (panel) {
-				panel.$panel.remove();
-				panel.hide();
-			}
-			$panel = $(Mustache.render(panelHTML, imageInfo));
-			addEventListeners($panel);
-			panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 250);
-			panel.show();
-			$icon.addClass('active');
-			CommandManager.get(EXTENSION_ID).setChecked(true);
-		} else {
-			isPanelVisible = false;
-			panel.hide();
+	function showPanel(imageInfo) {
+		isPanelVisible = true;
+		CommandManager.get(EXTENSION_ID).setChecked(true);
+
+		if (panel) {
 			panel.$panel.remove();
-			$icon.removeClass('active');
-			CommandManager.get(EXTENSION_ID).setChecked(false);
+			panel.hide();
 		}
+		$panel = $(Mustache.render(panelHTML, imageInfo));
+		addEventListeners($panel);
+		panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 250);
+		panel.show();
+		$icon.addClass('active');
+	}
+
+	function hidePanel() {
+		isPanelVisible = false;
+		CommandManager.get(EXTENSION_ID).setChecked(false);
+
+		panel.hide();
+		panel.$panel.remove();
+		$icon.removeClass('active');
 	}
 
 	/**
@@ -124,7 +125,7 @@ define(function (require, exports, module) {
 	 * @param {Object} imageInfo
 	 */
 	function openImage(imageInfo) {
-		setPanelVisibility(true, imageInfo);
+		showPanel(imageInfo);
 
 		filePath = imageInfo.path;
 
@@ -156,7 +157,7 @@ define(function (require, exports, module) {
 	 */
 	function closeImage() {
 		if (isPanelVisible) {
-			setPanelVisibility(false);
+			hidePanel();
 		}
 		filePath = null;
 	}
@@ -295,7 +296,7 @@ define(function (require, exports, module) {
 	 */
 	function addEventListeners($panel) {
 		$panel.on('click', '.close', function () {
-			setPanelVisibility(false);
+			hidePanel();
 		});
 
 		// Listen to the color format changes
@@ -415,10 +416,10 @@ define(function (require, exports, module) {
 	// Add command to project menu.
 	projectMenu.on("beforeContextMenuOpen", function () {
 		var selectedItem = ProjectManager.getSelectedItem();
-		projectMenu.removeMenuItem(EXTENSION_ID);
+		//projectMenu.removeMenuItem(EXTENSION_ID);
 
 		if (selectedItem.isFile && fileTypeRegex.test(selectedItem.name)) {
-			projectMenu.addMenuItem(EXTENSION_ID, EXTENSION_SHORTCUT);
+			projectMenu.addMenuItem(EXTENSION_ID);
 		}
 	});
 });
