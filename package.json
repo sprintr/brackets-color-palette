@@ -1,14 +1,14 @@
 {
-	"name": "io.brackets.color-palette",
+	"name": "sprintr.color-palette",
 	"title": "Brackets Color Palette",
-	"description": "Pick colors directly from images (*.png, *.jpg, *.jpeg, *.gif, *.ico)",
+	"description": "Pick colors from images",
 	"homepage": "https://github.com/sprintr/brackets-color-palette",
-	"version": "2.0.1",
+	"version": "3.0.0",
 	"author": "Amin Ullah Khan <aminullah@outlook.com> (https://github.com/sprintr)",
 	"licence": "MIT",
 	"engines": {
-		"brackets": ">=1.1.0"
+		"brackets": ">=1.8.0"
 	},
 	"categories": "visual",
-	"keywords": ["color", "picker", "image", "palette", "eyedropper", "dropper"]
+	"keywords": ["color", "picker", "image", "palette", "eyedropper", "dropper", "png", "jpg", "jpeg", "gif", "ico"]
 }

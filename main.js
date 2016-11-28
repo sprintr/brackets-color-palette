@@ -108,11 +108,14 @@ define(function (require, exports, module) {
 		}
 		$panel = $(Mustache.render(panelHTML, imageInfo));
 		addEventListeners($panel);
-		panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 250);
+		panel = WorkspaceManager.createBottomPanel(EXTENSION_ID, $panel, 300);
 		panel.show();
 		$icon.addClass('active');
 	}
 
+	/**
+	 * Hides the panel
+	 */
 	function hidePanel() {
 		isPanelVisible = false;
 		CommandManager.get(EXTENSION_ID).setChecked(false);
@@ -165,6 +168,9 @@ define(function (require, exports, module) {
 		filePath = null;
 	}
 
+	/**
+	 * Entrypoint to the extension
+	 */
 	function main() {
 		var selectedItem = ProjectManager.getSelectedItem(),
 			imageInfo = getImageInfo(selectedItem._path);
